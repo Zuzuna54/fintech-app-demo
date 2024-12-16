@@ -69,7 +69,7 @@ export function UsersTable({
         },
         {
             header: 'Organization',
-            accessor: 'organization_id' as const,
+            accessor: 'organization' as const,
             sortable: true,
             cell: (info: CellInfo) => {
                 const org = info.row.original.organization;

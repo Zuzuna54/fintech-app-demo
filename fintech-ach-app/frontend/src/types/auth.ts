@@ -1,16 +1,78 @@
+export interface Organization {
+    id: string;
+    name: string;
+}
+
 export interface User {
     id: string;
     email: string;
-    role: UserRole;
-    organization_id: string | null;
     first_name?: string;
     last_name?: string;
+    role: UserRole;
+    organization_id?: string;
+    organization?: Organization | null;
     created_at?: string;
-    updated_at?: string;
+    updated_at?: string | null;
 }
 
+/**
+ * Type guard to check if a value is a valid User object
+ * @param value The value to check
+ * @returns True if the value is a valid User object
+ */
+export function isUser(value: unknown): value is User {
+    if (!value || typeof value !== 'object') return false;
 
-export interface ExtendedUser extends User {
+    try {
+        const user = value as any;
+
+        // Basic property checks
+        const hasRequiredFields = (
+            typeof user.id === 'string' &&
+            typeof user.email === 'string' &&
+            typeof user.role === 'string' &&
+            'id' in user &&
+            'email' in user &&
+            'role' in user &&
+            (user.organization_id === undefined || user.organization_id === null || typeof user.organization_id === 'string') &&
+            !('user' in user) // Ensure we're not dealing with a wrapped object
+        );
+
+        if (!hasRequiredFields) {
+            console.error('[isUser] Missing required fields:', {
+                hasId: typeof user.id === 'string',
+                hasEmail: typeof user.email === 'string',
+                hasRole: typeof user.role === 'string',
+                hasValidRole: false,
+                hasRequiredFields: false
+            });
+            return false;
+        }
+
+        // Normalize and validate role
+        const normalizedRole = user.role.toUpperCase();
+        const isValidRole = Object.values(UserRole).includes(normalizedRole as UserRole);
+
+        if (!isValidRole) {
+            console.error('[isUser] Invalid role:', {
+                providedRole: user.role,
+                normalizedRole,
+                validRoles: Object.values(UserRole)
+            });
+            return false;
+        }
+
+        // If we get here, update the role to the normalized version
+        user.role = normalizedRole as UserRole;
+
+        return true;
+    } catch (error) {
+        console.error('[isUser] Validation error:', error);
+        return false;
+    }
+}
+
+export interface ExtendedUser extends Omit<User, 'organization'> {
     uuid: string;
     name: string;
     organization?: {
@@ -82,26 +144,6 @@ export function normalizeRole(role: string): UserRole {
             return UserRole.ORGANIZATION_ADMIN;
         default:
             throw new Error(`Invalid role: ${role}`);
-    }
-}
-
-/**
- * Type guard to check if a value is a valid User object
- */
-export function isUser(data: any): data is User {
-    if (!data || typeof data !== 'object') return false;
-
-    try {
-        return (
-            typeof data.id === 'string' &&
-            typeof data.email === 'string' &&
-            typeof data.role === 'string' &&
-            (data.organization_id === null || typeof data.organization_id === 'string') &&
-            !('user' in data) // Ensure we're not dealing with a wrapped object
-        );
-    } catch (error) {
-        console.error('User validation failed:', error);
-        return false;
     }
 }
 

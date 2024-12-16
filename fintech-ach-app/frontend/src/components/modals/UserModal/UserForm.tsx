@@ -1,19 +1,19 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
+// import { motion } from 'framer-motion';
+// import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { User } from '@/types';
+import { ExtendedUser, User } from '@/types';
 import { UserRole } from '@/types/auth';
 import { useOrganizations } from '@/hooks/useOrganizations';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Trash2, Save } from 'lucide-react';
 
 interface UserFormProps {
-    user: User | null;
+    user: ExtendedUser | null;
     isSubmitting: boolean;
     isDeleting: boolean;
     canEdit: boolean;

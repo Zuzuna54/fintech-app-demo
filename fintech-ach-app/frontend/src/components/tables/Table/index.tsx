@@ -55,15 +55,13 @@ export function Table({
 
     return (
         <div className="relative">
-            <div className="h-[480px] overflow-auto relative">
-                <div className="sticky top-0 z-20 bg-white">
+            <div className="h-[480px] overflow-auto">
+                <table className="min-w-full">
                     <TableHeader
                         columns={columns}
                         sortConfig={sortConfig}
                         onSort={handleSort}
                     />
-                </div>
-                <table className="min-w-full divide-y divide-gray-200">
                     <TableBody
                         columns={columns}
                         items={items}
@@ -71,7 +69,7 @@ export function Table({
                     />
                 </table>
             </div>
-            <div className="sticky bottom-0 w-full bg-white z-10 border-t border-gray-200">
+            <div className="sticky bottom-0 w-full bg-white z-10">
                 <TableFooter total={total} type={type} />
             </div>
         </div>

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, func, or_
 from typing import List, Optional, Union
-from pydantic import BaseModel, UUID4, EmailStr
+from pydantic import BaseModel, UUID4, EmailStr, validator
 from datetime import datetime
 import logging
 
@@ -40,7 +40,15 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    role: UserRole
+    role: str
+
+    @validator('role')
+    def validate_role(cls, v):
+        # Convert role to uppercase
+        upper_role = v.upper()
+        if upper_role not in ['SUPERUSER', 'ORGANIZATION_ADMIN']:
+            raise ValueError('Role must be either SUPERUSER or ORGANIZATION_ADMIN')
+        return upper_role
 
 class AdminBase(UserBase):
     organization_id: UUID4
@@ -55,14 +63,24 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    role: Optional[UserRole] = None
+    role: Optional[str] = None
     is_active: Optional[bool] = None
     password: Optional[str] = None
+
+    @validator('role')
+    def validate_role(cls, v):
+        if v is not None:
+            upper_role = v.upper()
+            if upper_role not in ['SUPERUSER', 'ORGANIZATION_ADMIN']:
+                raise ValueError('Role must be either SUPERUSER or ORGANIZATION_ADMIN')
+            return upper_role
+        return v
 
 class UserResponse(UserBase):
     id: UUID4
     created_at: datetime
     updated_at: Optional[datetime] = None
+    organization: Optional[dict] = None
 
     class Config:
         from_attributes = True
@@ -71,6 +89,7 @@ class AdminResponse(AdminBase):
     id: UUID4
     created_at: datetime
     updated_at: Optional[datetime] = None
+    organization: Optional[dict] = None
 
     class Config:
         from_attributes = True
@@ -307,72 +326,167 @@ async def list_users(
     organization_id: Optional[UUID4] = None,
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    sort_by: Optional[str] = Query(None, description="Field to sort by (email, first_name, last_name, role, created_at)"),
+    sort_by: Optional[str] = Query(None, description="Field to sort by (email, first_name, last_name, role, created_at, organization)"),
     sort_direction: Optional[str] = Query('desc', description="Sort direction (asc/desc)"),
     session: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """List users with pagination and sorting. Superusers can view all users, org admins can only view users in their org."""
+    logger.info(f"[LIST_USERS] Starting list_users request. Params: limit={limit}, offset={offset}, sort_by={sort_by}, sort_direction={sort_direction}")
+    logger.info(f"[LIST_USERS] Current user role: {current_user.role}, org_id: {current_user.organization_id if hasattr(current_user, 'organization_id') else None}")
     
-    # Check permissions
-    if current_user.role != UserRole.SUPERUSER:
-        if not current_user.organization_id:
-            raise HTTPException(status_code=403, detail="Access denied")
-        organization_id = current_user.organization_id
-
-    # Validate sort_by field
-    valid_sort_fields = {'email', 'first_name', 'last_name', 'role', 'created_at'}
-    if sort_by and sort_by not in valid_sort_fields:
-        raise HTTPException(status_code=400, detail=f"Invalid sort_by field. Must be one of: {', '.join(valid_sort_fields)}")
-
     try:
-        # Get total counts first
-        superusers_count = await session.execute(select(func.count()).select_from(SuperUser))
-        admins_query = select(func.count()).select_from(OrganizationAdministrator)
-        if organization_id:
-            admins_query = admins_query.where(OrganizationAdministrator.organization_id == organization_id)
-        admins_count = await session.execute(admins_query)
+        # Check permissions
+        if current_user.role != UserRole.SUPERUSER:
+            logger.info("[LIST_USERS] Non-superuser access, restricting to organization")
+            if not current_user.organization_id:
+                logger.error("[LIST_USERS] Organization admin without organization_id")
+                raise HTTPException(status_code=403, detail="Access denied")
+            organization_id = current_user.organization_id
+            logger.info(f"[LIST_USERS] Filtered by organization_id: {organization_id}")
+
+        # Validate sort_by field
+        valid_sort_fields = {'email', 'first_name', 'last_name', 'role', 'created_at', 'organization'}
+        if sort_by and sort_by not in valid_sort_fields:
+            logger.error(f"[LIST_USERS] Invalid sort_by field: {sort_by}")
+            raise HTTPException(status_code=400, detail=f"Invalid sort_by field. Must be one of: {', '.join(valid_sort_fields)}")
+
+        logger.info("[LIST_USERS] Starting database queries")
         
-        total = superusers_count.scalar() + admins_count.scalar()
+        try:
+            # Get total counts first
+            logger.debug("[LIST_USERS] Querying superusers count")
+            superusers_count = await session.execute(select(func.count()).select_from(SuperUser))
+            superusers_total = superusers_count.scalar()
+            logger.debug(f"[LIST_USERS] Superusers count: {superusers_total}")
 
-        # Build base queries
-        superusers_query = select(SuperUser)
-        admins_query = select(OrganizationAdministrator)
+            logger.debug("[LIST_USERS] Querying admins count")
+            admins_query = select(func.count()).select_from(OrganizationAdministrator)
+            if organization_id:
+                admins_query = admins_query.where(OrganizationAdministrator.organization_id == organization_id)
+            admins_count = await session.execute(admins_query)
+            admins_total = admins_count.scalar()
+            logger.debug(f"[LIST_USERS] Admins count: {admins_total}")
+            
+            total = superusers_total + admins_total
+            logger.info(f"[LIST_USERS] Total users count: {total}")
 
-        if organization_id:
-            admins_query = admins_query.where(OrganizationAdministrator.organization_id == organization_id)
-
-        # Execute queries without pagination first to get all results for proper sorting
-        superusers = (await session.execute(superusers_query)).scalars().all()
-        admins = (await session.execute(admins_query)).scalars().all()
-
-        # Combine results
-        all_users = []
-        all_users.extend(superusers)
-        all_users.extend(admins)
-
-        # Sort combined results if needed
-        if sort_by:
-            all_users.sort(
-                key=lambda x: getattr(x, sort_by) or '',
-                reverse=(sort_direction == 'desc')
+            # Build base queries
+            logger.debug("[LIST_USERS] Building superusers query")
+            superusers_query = select(SuperUser)
+            
+            logger.debug("[LIST_USERS] Building admins query with organization join")
+            admins_query = select(OrganizationAdministrator, Organization).join(
+                Organization,
+                OrganizationAdministrator.organization_id == Organization.id,
+                isouter=True
             )
 
-        # Apply pagination to combined results
-        start = offset
-        end = offset + limit
-        paginated_users = all_users[start:end]
+            if organization_id:
+                logger.debug(f"[LIST_USERS] Filtering admins by organization_id: {organization_id}")
+                admins_query = admins_query.where(OrganizationAdministrator.organization_id == organization_id)
 
-        return {
-            "data": paginated_users,
-            "total": total,
-            "limit": limit,
-            "offset": offset
-        }
+            # Execute queries
+            logger.debug("[LIST_USERS] Executing superusers query")
+            superusers = (await session.execute(superusers_query)).scalars().all()
+            logger.debug(f"[LIST_USERS] Retrieved {len(superusers)} superusers")
+
+            logger.debug("[LIST_USERS] Executing admins query")
+            admin_results = (await session.execute(admins_query)).all()
+            logger.debug(f"[LIST_USERS] Retrieved {len(admin_results)} admins")
+
+            # Process admin results
+            logger.debug("[LIST_USERS] Processing admin results")
+            admins = []
+            for admin, org in admin_results:
+                # Convert role to uppercase and create a clean dict without SQLAlchemy state
+                admin_dict = {
+                    'id': str(admin.id),
+                    'email': admin.email,
+                    'first_name': admin.first_name,
+                    'last_name': admin.last_name,
+                    'role': admin.role.upper() if admin.role else None,
+                    'organization_id': str(admin.organization_id) if admin.organization_id else None,
+                    'created_at': admin.created_at,
+                    'updated_at': admin.updated_at,
+                    'organization': {
+                        'id': str(org.id),
+                        'name': org.name
+                    } if org else None
+                }
+                admins.append(admin_dict)
+
+            # Combine results
+            logger.debug("[LIST_USERS] Combining user results")
+            all_users = []
+            # Process superusers with clean dict creation
+            all_users.extend([{
+                'id': str(user.id),
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role.upper() if user.role else None,
+                'organization_id': None,
+                'created_at': user.created_at,
+                'updated_at': user.updated_at,
+                'organization': None
+            } for user in superusers])
+            all_users.extend(admins)
+            logger.debug(f"[LIST_USERS] Combined total users: {len(all_users)}")
+
+            # Sort combined results
+            if sort_by:
+                logger.debug(f"[LIST_USERS] Sorting results by {sort_by} {sort_direction}")
+                try:
+                    if sort_by == 'organization':
+                        # Custom sorting for organization field
+                        all_users.sort(
+                            key=lambda x: (
+                                x.get('organization', {}).get('name', '') or ''
+                            ).lower() if x.get('organization') else '',
+                            reverse=(sort_direction == 'desc')
+                        )
+                    else:
+                        # Standard sorting for other fields
+                        all_users.sort(
+                            key=lambda x: (getattr(x, sort_by) or '').lower() if isinstance(getattr(x, sort_by, ''), str) else (getattr(x, sort_by) or ''),
+                            reverse=(sort_direction == 'desc')
+                        )
+                except Exception as sort_error:
+                    logger.error(f"[LIST_USERS] Error during sorting: {sort_error}", exc_info=True)
+                    # Continue without sorting if there's an error
+
+            # Apply pagination
+            logger.debug(f"[LIST_USERS] Applying pagination: offset={offset}, limit={limit}")
+            start = offset
+            end = offset + limit
+            paginated_users = all_users[start:end]
+            logger.debug(f"[LIST_USERS] Paginated results count: {len(paginated_users)}")
+
+            response_data = {
+                "data": paginated_users,
+                "total": total,
+                "limit": limit,
+                "offset": offset
+            }
+            logger.info("[LIST_USERS] Successfully prepared response")
+            return response_data
+
+        except Exception as db_error:
+            logger.error("[LIST_USERS] Database operation error", exc_info=True)
+            raise HTTPException(
+                status_code=500,
+                detail=f"Database error: {str(db_error)}"
+            )
+
+    except HTTPException as http_error:
+        logger.error(f"[LIST_USERS] HTTP exception: {http_error.detail}", exc_info=True)
+        raise
     except Exception as e:
+        logger.error("[LIST_USERS] Unexpected error", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Error fetching users: {str(e)}"
+            detail=f"Internal server error: {str(e)}"
         )
 
 @router.get("/users/{user_id}", response_model=Union[UserResponse, AdminResponse])
