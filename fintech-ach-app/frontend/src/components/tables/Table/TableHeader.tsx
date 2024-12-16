@@ -35,31 +35,32 @@ export function TableHeader({ columns, sortConfig, onSort }: TableHeaderProps): 
     };
 
     return (
-        <thead>
-            <tr>
-                {columns.map((column, idx) => (
-                    <th
-                        key={idx}
-                        scope="col"
-                        onClick={() => handleSort(column)}
-                        className={`
-                            sticky top-0
-                            bg-gray-50 shadow-sm
-                            px-6 py-3 
-                            text-left text-xs font-medium 
-                            uppercase tracking-wider text-gray-500 
-                            first:pl-8 last:pr-8
-                            ${column.sortable ? 'cursor-pointer group hover:bg-gray-100' : ''}
-                            transition-colors duration-200
-                        `}
-                    >
-                        <div className="flex items-center space-x-1">
-                            <span>{column.header}</span>
-                            {renderSortIcon(column)}
-                        </div>
-                    </th>
-                ))}
-            </tr>
-        </thead>
+        <table className="min-w-full">
+            <thead className="bg-white">
+                <tr>
+                    {columns.map((column, idx) => (
+                        <th
+                            key={idx}
+                            scope="col"
+                            onClick={() => handleSort(column)}
+                            className={`
+                                bg-gray-50 border-b border-gray-200
+                                px-6 py-3 
+                                text-left text-xs font-medium 
+                                uppercase tracking-wider text-gray-500 
+                                first:pl-8 last:pr-8
+                                ${column.sortable ? 'cursor-pointer group hover:bg-gray-100' : ''}
+                                transition-colors duration-200
+                            `}
+                        >
+                            <div className="flex items-center space-x-1">
+                                <span>{column.header}</span>
+                                {renderSortIcon(column)}
+                            </div>
+                        </th>
+                    ))}
+                </tr>
+            </thead>
+        </table>
     );
 } 
