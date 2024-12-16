@@ -10,5 +10,11 @@ interface OrganizationsResponse {
 }
 
 export function useOrganizations() {
-    return useSWR<OrganizationsResponse>('/management/organizations', api.get);
+    return useSWR<OrganizationsResponse>('/management/organizations', async (url) => {
+        const response = await api.get(url);
+        return response.data;
+    }, {
+        revalidateOnFocus: false,
+        shouldRetryOnError: false
+    });
 } 

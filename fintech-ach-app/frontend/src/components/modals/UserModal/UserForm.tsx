@@ -49,7 +49,19 @@ export function UserForm({ user, isSubmitting, isDeleting, canEdit, canDelete, h
         organization_id: user?.organization_id ?? ''
     });
     const [errors, setErrors] = useState<FormErrors>({});
-    const { data: organizationsData, error: organizationsError } = useOrganizations();
+    const { data: organizationsData, error: organizationsError, isLoading } = useOrganizations();
+
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                first_name: user.first_name ?? '',
+                last_name: user.last_name ?? '',
+                email: user.email ?? '',
+                role: user.role ?? '',
+                organization_id: user.organization?.uuid ?? user.organization_id ?? ''
+            });
+        }
+    }, [user]);
 
     const validateForm = (): boolean => {
         const newErrors: FormErrors = {};
@@ -154,11 +166,13 @@ export function UserForm({ user, isSubmitting, isDeleting, canEdit, canDelete, h
                         Organization
                     </label>
                     {organizationsError ? (
-                        <p className="mt-1 text-sm text-red-600">Failed to load organizations</p>
-                    ) : !organizationsData ? (
+                        <p className="mt-1 text-sm text-red-600">Failed to load organizations. Please try again later.</p>
+                    ) : isLoading ? (
                         <div className="mt-2">
                             <LoadingSpinner size="small" />
                         </div>
+                    ) : !organizationsData?.organizations?.length ? (
+                        <p className="mt-1 text-sm text-red-600">No organizations available</p>
                     ) : (
                         <Select
                             value={formData.organization_id}
