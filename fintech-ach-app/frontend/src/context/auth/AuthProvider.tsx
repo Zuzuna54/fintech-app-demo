@@ -15,7 +15,7 @@ import { authReducer, initialState } from './reducer';
 import { useRoleChecks, useTokenRefreshInterval } from './hooks';
 import { fetchUserData, updateUserData, logoutUser } from './userService';
 import { loginUser, refreshUserToken } from './authService';
-import HTTPException from 'axios';
+import { AxiosError } from 'axios';
 
 // Create context
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
         } catch (error) {
             console.error("[AUTH] Token refresh failed:", error);
             // Only logout if the error is authentication-related
-            if (error instanceof HTTPException && error.status === 401) {
+            if (error instanceof AxiosError && error.response?.status === 401) {
                 dispatch({ type: 'AUTH_FAILURE', payload: 'Session expired' });
                 removeTokens();
                 router.push('/login');
@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
             } catch (error) {
                 console.error("[AUTH] Token refresh check failed:", error);
                 // Don't logout on network errors or other temporary issues
-                if (error instanceof HTTPException && error.status === 401) {
+                if (error instanceof AxiosError && error.response?.status === 401) {
                     dispatch({ type: 'AUTH_FAILURE', payload: 'Session expired' });
                     removeTokens();
                     router.push('/login');

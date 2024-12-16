@@ -1,5 +1,6 @@
 import React from 'react';
 import { Table } from '@/components/tables/Table';
+import { AnimatedTableContainer } from '@/components/tables/Table/AnimatedTableContainer';
 import { User, Organization, Account, Payment } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/auth';
@@ -88,16 +89,20 @@ export function UsersTable({
     ];
 
     return (
-        <Table
-            columns={columns}
-            data={{ users: data, total }}
-            type="users"
-            onRowClick={canManageUsers ? onRowClick : undefined}
-            sortConfig={sortConfig}
-            onSort={onSort}
+        <AnimatedTableContainer
             currentPage={currentPage}
             pageSize={pageSize}
+            total={total}
             onPageChange={onPageChange}
-        />
+        >
+            <Table
+                columns={columns}
+                data={{ users: data, total }}
+                type="users"
+                onRowClick={canManageUsers ? onRowClick : undefined}
+                sortConfig={sortConfig}
+                onSort={onSort}
+            />
+        </AnimatedTableContainer>
     );
 } 

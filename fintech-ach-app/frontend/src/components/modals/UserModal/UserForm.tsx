@@ -14,41 +14,52 @@ import { Trash2, Save } from 'lucide-react';
 
 interface UserFormProps {
     user: User | null;
-    onSuccess: () => void;
-    onError: (error: Error) => void;
-    onDelete?: () => Promise<void>;
+    isSubmitting: boolean;
+    isDeleting: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    hasChanges: boolean;
+    onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+    onChange: (field: keyof User, value: string) => void;
+    onDelete: () => Promise<void>;
 }
 
 interface FormData {
-    name: string;
+    first_name: string;
+    last_name: string;
     email: string;
     role: string;
     organization_id?: string;
 }
 
 interface FormErrors {
-    name?: string;
+    first_name?: string;
+    last_name?: string;
     email?: string;
     role?: string;
     organization_id?: string;
 }
 
-export function UserForm({ user, onSuccess, onError, onDelete }: UserFormProps): JSX.Element {
+export function UserForm({ user, isSubmitting, isDeleting, canEdit, canDelete, hasChanges, onSubmit, onChange, onDelete }: UserFormProps): JSX.Element {
     const [formData, setFormData] = useState<FormData>({
-        name: user?.name ?? '',
+        first_name: user?.first_name ?? '',
+        last_name: user?.last_name ?? '',
         email: user?.email ?? '',
         role: user?.role ?? '',
-        organization_id: user?.organization?.uuid ?? ''
+        organization_id: user?.organization_id ?? ''
     });
     const [errors, setErrors] = useState<FormErrors>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const { data: organizationsData, error: organizationsError } = useOrganizations();
 
     const validateForm = (): boolean => {
         const newErrors: FormErrors = {};
 
-        if (!formData.name.trim()) {
-            newErrors.name = 'Name is required';
+        if (!formData.first_name.trim()) {
+            newErrors.first_name = 'First name is required';
+        }
+
+        if (!formData.last_name.trim()) {
+            newErrors.last_name = 'Last name is required';
         }
 
         if (!formData.email.trim()) {
@@ -80,23 +91,29 @@ export function UserForm({ user, onSuccess, onError, onDelete }: UserFormProps):
             return;
         }
 
-        setIsSubmitting(true);
         try {
-            onSuccess();
+            onSubmit(e);
         } catch (error) {
-            onError(error as Error);
-        } finally {
-            setIsSubmitting(false);
+            console.error('Error submitting form:', error);
         }
     };
 
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
             <Input
-                label="Name"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                error={errors.name}
+                label="First Name"
+                value={formData.first_name}
+                onChange={(e) => handleChange('first_name', e.target.value)}
+                error={errors.first_name}
+                disabled={isSubmitting}
+                required
+            />
+
+            <Input
+                label="Last Name"
+                value={formData.last_name}
+                onChange={(e) => handleChange('last_name', e.target.value)}
+                error={errors.last_name}
                 disabled={isSubmitting}
                 required
             />
@@ -171,11 +188,11 @@ export function UserForm({ user, onSuccess, onError, onDelete }: UserFormProps):
                 >
                     {user ? 'Update User' : 'Create User'}
                 </Button>
-                {onDelete && user && (
+                {canDelete && user && (
                     <Button
                         type="button"
                         onClick={() => void onDelete()}
-                        isLoading={isSubmitting}
+                        isLoading={isDeleting}
                         variant="destructive"
                         leftIcon={<Trash2 className="h-4 w-4" />}
                     >

@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Table } from '@/components/tables/Table';
+import { AnimatedTableContainer } from '@/components/tables/Table/AnimatedTableContainer';
 import type { Column, SortConfig } from '@/types/table';
 import type { Organization } from '@/types/api';
 
@@ -28,11 +28,11 @@ export function OrganizationsTable({
     onRowClick
 }: OrganizationsTableProps): JSX.Element {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-            className="bg-white rounded-lg shadow-sm"
+        <AnimatedTableContainer
+            currentPage={currentPage}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={onPageChange}
         >
             <Table
                 data={{
@@ -43,17 +43,14 @@ export function OrganizationsTable({
                 }}
                 type="organizations"
                 columns={columns}
-                currentPage={currentPage}
-                pageSize={pageSize}
                 sortConfig={sortConfig}
                 onSort={onSort}
-                onPageChange={onPageChange}
                 onRowClick={(item) => {
                     if ('name' in item && 'description' in item) {
                         onRowClick(item);
                     }
                 }}
             />
-        </motion.div>
+        </AnimatedTableContainer>
     );
 } 

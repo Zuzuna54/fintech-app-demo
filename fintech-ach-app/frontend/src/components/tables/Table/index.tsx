@@ -21,9 +21,6 @@ export interface TableProps {
     onRowClick?: (item: Account | Payment | Organization | User) => void;
     sortConfig?: SortConfig;
     onSort?: (config: SortConfig) => void;
-    currentPage?: number;
-    pageSize?: number;
-    onPageChange?: (page: number) => void;
 }
 
 export function Table({
@@ -48,14 +45,7 @@ export function Table({
         if (!column.sortable || !onSort) return;
 
         const key = column.accessor;
-        const direction = sortConfig?.key === key
-            ? sortConfig.direction === 'asc'
-                ? 'desc'
-                : sortConfig.direction === 'desc'
-                    ? null
-                    : 'asc'
-            : 'asc';
-
+        const direction = sortConfig?.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
         onSort({ key, direction });
     };
 
@@ -64,24 +54,22 @@ export function Table({
     }
 
     return (
-        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="h-[480px] flex flex-col">
-                <div className="overflow-x-auto">
-                    <div className="overflow-y-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <TableHeader
-                                columns={columns}
-                                sortConfig={sortConfig}
-                                onSort={handleSort}
-                            />
-                            <TableBody
-                                columns={columns}
-                                items={items}
-                                onRowClick={onRowClick}
-                            />
-                        </table>
-                    </div>
-                </div>
+        <div className="relative">
+            <div className="h-[480px] overflow-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <TableHeader
+                        columns={columns}
+                        sortConfig={sortConfig}
+                        onSort={handleSort}
+                    />
+                    <TableBody
+                        columns={columns}
+                        items={items}
+                        onRowClick={onRowClick}
+                    />
+                </table>
+            </div>
+            <div className="sticky bottom-0 w-full bg-white">
                 <TableFooter total={total} type={type} />
             </div>
         </div>

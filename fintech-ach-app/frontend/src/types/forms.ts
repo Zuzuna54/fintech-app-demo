@@ -94,10 +94,13 @@ export interface FormTouched {
 }
 
 export interface UserFormData {
+    first_name: string;
+    last_name: string;
     name?: string;
-    email?: string;
-    role?: string;
+    email: string;
+    role: string;
     organization_id?: string;
+    password?: string;
 }
 
 export interface UseUserModalReturn {

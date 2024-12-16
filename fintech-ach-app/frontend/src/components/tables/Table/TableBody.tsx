@@ -71,24 +71,28 @@ export function TableBody({ columns, items, onRowClick }: TableBodyProps): JSX.E
 
     return (
         <tbody className="divide-y divide-gray-200 bg-white">
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
                 {items.map((item, index) => (
                     <motion.tr
-                        key={hasId(item) ? item.id : index}
+                        key={hasId(item) ? item.id : hasUuid(item) ? item.uuid : index}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{
-                            duration: 0.2,
-                            delay: index * 0.05,
-                            ease: [0.25, 0.1, 0.25, 1]
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                            mass: 1,
+                            delay: index * 0.03
                         }}
-                        whileHover={{ scale: 1.005 }}
+                        whileHover={{
+                            scale: onRowClick ? 1.005 : 1,
+                            backgroundColor: "rgba(0, 0, 0, 0.02)"
+                        }}
                         onClick={() => onRowClick?.(item)}
                         className={`
                             relative
                             ${onRowClick ? 'cursor-pointer' : ''}
-                            hover:bg-gray-50/50
                             group
                         `}
                         style={{

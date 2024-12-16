@@ -77,7 +77,6 @@ export function UserModal({
                                 </CardHeader>
                                 <CardContent>
                                     <UserForm
-                                        formData={formData}
                                         user={user}
                                         isSubmitting={isSubmitting}
                                         isDeleting={isDeleting}

@@ -94,7 +94,31 @@ function UsersPage(): JSX.Element {
                             <UserForm
                                 key="user-form"
                                 user={selectedUser ?? undefined}
-                                onSuccess={handleUserSuccess}
+                                formData={{
+                                    first_name: selectedUser?.first_name ?? '',
+                                    last_name: selectedUser?.last_name ?? '',
+                                    email: selectedUser?.email ?? '',
+                                    role: selectedUser?.role ?? '',
+                                    organization_id: selectedUser?.organization_id ?? '',
+                                    password: ''
+                                }}
+                                isSubmitting={false}
+                                isDeleting={false}
+                                canEdit={true}
+                                canDelete={true}
+                                hasChanges={false}
+                                onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    await handleUserSuccess();
+                                }}
+                                onChange={(field, value) => {
+                                    // Handle changes
+                                }}
+                                onDelete={async () => {
+                                    if (selectedUser) {
+                                        await handleDeleteUser(selectedUser);
+                                    }
+                                }}
                             />
                         )}
                     </AnimatePresence>

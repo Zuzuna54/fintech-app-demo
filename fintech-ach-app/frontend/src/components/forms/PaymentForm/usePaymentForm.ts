@@ -106,7 +106,7 @@ export function usePaymentForm({ onSuccess, onError, accounts }: UsePaymentFormP
                 payment_type: formState.paymentType,
                 from_account_id: formState.fromAccount,
                 to_account_id: formState.toAccount,
-                amount: parseFloat(formState.amount) * 100, // Convert to cents
+                amount: parseFloat(formState.amount.replace(/[^0-9.]/g, '')), // Parse the amount directly without multiplying
                 description: formState.description,
                 idempotency_key: uuidv4() // Add unique idempotency key for each request
             });

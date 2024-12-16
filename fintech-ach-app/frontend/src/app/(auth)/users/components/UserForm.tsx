@@ -4,24 +4,23 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { User } from '@/types';
-import { UserRole } from '@/types/auth';
+import { User, UserRole } from '@/types/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { api } from '@/lib/api';
 import { Organization } from '@/types/api';
+import { UserFormData } from '@/types/forms';
 
 interface UserFormProps {
     user?: User;
-    onSuccess: () => void;
-}
-
-interface FormData {
-    first_name: string;
-    last_name: string;
-    email: string;
-    role: string;
-    organization_id?: string;
-    password?: string;
+    formData: UserFormData;
+    isSubmitting: boolean;
+    isDeleting: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    hasChanges: boolean;
+    onSubmit: (e: React.FormEvent) => Promise<void>;
+    onChange: (field: keyof User | 'password', value: string) => void;
+    onDelete: () => Promise<void>;
 }
 
 interface FormErrors {
@@ -38,17 +37,19 @@ interface OrganizationsResponse {
     total: number;
 }
 
-export function UserForm({ user, onSuccess }: UserFormProps): JSX.Element {
-    const [formData, setFormData] = useState<FormData>({
-        first_name: user?.first_name ?? '',
-        last_name: user?.last_name ?? '',
-        email: user?.email ?? '',
-        role: user?.role ?? '',
-        organization_id: user?.organization_id ?? '',
-        password: ''
-    });
+export function UserForm({
+    user,
+    formData,
+    isSubmitting,
+    isDeleting,
+    canEdit,
+    canDelete,
+    hasChanges,
+    onSubmit,
+    onChange,
+    onDelete
+}: UserFormProps): JSX.Element {
     const [errors, setErrors] = useState<FormErrors>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(false);
     const [organizationsError, setOrganizationsError] = useState<string | null>(null);
@@ -109,42 +110,6 @@ export function UserForm({ user, onSuccess }: UserFormProps): JSX.Element {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault();
-
-        if (!validateForm()) {
-            return;
-        }
-
-        setIsSubmitting(true);
-
-        try {
-            const submissionData = {
-                email: formData.email,
-                first_name: formData.first_name,
-                last_name: formData.last_name,
-                role: formData.role.toLowerCase(),
-                password: formData.password
-            };
-
-            if (formData.role === UserRole.ORGANIZATION_ADMIN && formData.organization_id) {
-                submissionData['organization_id'] = formData.organization_id;
-            }
-
-            if (user) {
-                const { password, ...updateData } = submissionData;
-                await api.put(`/management/users/${user.id}`, updateData);
-            } else {
-                await api.post('/management/users', submissionData);
-            }
-            onSuccess();
-        } catch (error) {
-            console.error('Error submitting user:', error);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
     return (
         <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -161,12 +126,12 @@ export function UserForm({ user, onSuccess }: UserFormProps): JSX.Element {
                     <CardTitle>{user ? 'Edit User' : 'Create User'}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+                    <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <Input
                                 label="First Name"
                                 value={formData.first_name}
-                                onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                                onChange={(e) => onChange('first_name', e.target.value)}
                                 error={errors.first_name}
                                 disabled={isSubmitting}
                                 required
@@ -175,7 +140,7 @@ export function UserForm({ user, onSuccess }: UserFormProps): JSX.Element {
                             <Input
                                 label="Last Name"
                                 value={formData.last_name}
-                                onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                                onChange={(e) => onChange('last_name', e.target.value)}
                                 error={errors.last_name}
                                 disabled={isSubmitting}
                                 required
@@ -186,7 +151,7 @@ export function UserForm({ user, onSuccess }: UserFormProps): JSX.Element {
                             label="Email"
                             type="email"
                             value={formData.email}
-                            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                            onChange={(e) => onChange('email', e.target.value)}
                             error={errors.email}
                             disabled={isSubmitting}
                             required
@@ -197,7 +162,7 @@ export function UserForm({ user, onSuccess }: UserFormProps): JSX.Element {
                                 label="Password"
                                 type="password"
                                 value={formData.password}
-                                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                                onChange={(e) => onChange('password', e.target.value)}
                                 error={errors.password}
                                 disabled={isSubmitting}
                                 required
@@ -210,7 +175,7 @@ export function UserForm({ user, onSuccess }: UserFormProps): JSX.Element {
                             </label>
                             <Select
                                 value={formData.role}
-                                onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                                onChange={(e) => onChange('role', e.target.value)}
                                 className="mt-1"
                                 disabled={isSubmitting}
                                 required
@@ -238,7 +203,7 @@ export function UserForm({ user, onSuccess }: UserFormProps): JSX.Element {
                                 ) : (
                                     <Select
                                         value={formData.organization_id}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, organization_id: e.target.value }))}
+                                        onChange={(e) => onChange('organization_id', e.target.value)}
                                         className="mt-1"
                                         disabled={isSubmitting}
                                     >

@@ -22,14 +22,16 @@ interface UserModalProps {
 }
 
 interface FormData {
-    name: string;
+    first_name: string;
+    last_name: string;
     email: string;
     role: string;
     organization_id?: string;
 }
 
 interface FormErrors {
-    name?: string;
+    first_name?: string;
+    last_name?: string;
     email?: string;
     role?: string;
     organization_id?: string;
@@ -45,7 +47,8 @@ export function UserModal({
 }: UserModalProps): JSX.Element {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState<FormData>({
-        name: '',
+        first_name: '',
+        last_name: '',
         email: '',
         role: '',
         organization_id: ''
@@ -57,10 +60,11 @@ export function UserModal({
     React.useEffect(() => {
         if (user) {
             setFormData({
-                name: user.name,
+                first_name: user.first_name ?? '',
+                last_name: user.last_name ?? '',
                 email: user.email,
                 role: user.role,
-                organization_id: user.organization?.uuid ?? ''
+                organization_id: user.organization_id ?? ''
             });
             setHasChanges(false);
         }
@@ -69,14 +73,15 @@ export function UserModal({
     const handleInputChange = (field: keyof FormData, value: string): void => {
         setFormData(prev => ({ ...prev, [field]: value }));
 
-        // Check if any field is different from original
-        const isChanged = field === 'name'
-            ? value !== user?.name || formData.email !== user?.email || formData.role !== user?.role || formData.organization_id !== user?.organization?.uuid
-            : field === 'email'
-                ? value !== user?.email || formData.name !== user?.name || formData.role !== user?.role || formData.organization_id !== user?.organization?.uuid
-                : field === 'role'
-                    ? value !== user?.role || formData.name !== user?.name || formData.email !== user?.email || formData.organization_id !== user?.organization?.uuid
-                    : value !== user?.organization?.uuid || formData.name !== user?.name || formData.email !== user?.email || formData.role !== user?.role;
+        const isChanged = field === 'first_name'
+            ? value !== user?.first_name || formData.last_name !== user?.last_name || formData.email !== user?.email || formData.role !== user?.role || formData.organization_id !== user?.organization_id
+            : field === 'last_name'
+                ? value !== user?.last_name || formData.first_name !== user?.first_name || formData.email !== user?.email || formData.role !== user?.role || formData.organization_id !== user?.organization_id
+                : field === 'email'
+                    ? value !== user?.email || formData.first_name !== user?.first_name || formData.last_name !== user?.last_name || formData.role !== user?.role || formData.organization_id !== user?.organization_id
+                    : field === 'role'
+                        ? value !== user?.role || formData.first_name !== user?.first_name || formData.last_name !== user?.last_name || formData.email !== user?.email || formData.organization_id !== user?.organization_id
+                        : value !== user?.organization_id || formData.first_name !== user?.first_name || formData.last_name !== user?.last_name || formData.email !== user?.email || formData.role !== user?.role;
 
         setHasChanges(isChanged);
     };
@@ -84,8 +89,12 @@ export function UserModal({
     const validateForm = (): boolean => {
         const newErrors: FormErrors = {};
 
-        if (!formData.name.trim()) {
-            newErrors.name = 'Name is required';
+        if (!formData.first_name.trim()) {
+            newErrors.first_name = 'First name is required';
+        }
+
+        if (!formData.last_name.trim()) {
+            newErrors.last_name = 'Last name is required';
         }
 
         if (!formData.email.trim()) {
@@ -184,10 +193,18 @@ export function UserModal({
                                     <div className="mt-6 space-y-6">
                                         <div className="space-y-4">
                                             <Input
-                                                label="Name"
-                                                value={formData.name}
-                                                onChange={(e) => handleInputChange('name', e.target.value)}
-                                                error={errors.name}
+                                                label="First Name"
+                                                value={formData.first_name}
+                                                onChange={(e) => handleInputChange('first_name', e.target.value)}
+                                                error={errors.first_name}
+                                                disabled={isSubmitting}
+                                            />
+
+                                            <Input
+                                                label="Last Name"
+                                                value={formData.last_name}
+                                                onChange={(e) => handleInputChange('last_name', e.target.value)}
+                                                error={errors.last_name}
                                                 disabled={isSubmitting}
                                             />
 
@@ -257,7 +274,7 @@ export function UserModal({
                                                 <div>
                                                     <h3 className="text-sm font-medium text-gray-500">Created</h3>
                                                     <p className="mt-1 text-sm text-gray-900">
-                                                        {formatDate(user.created_at)}
+                                                        {user.created_at ? formatDate(user.created_at) : 'N/A'}
                                                     </p>
                                                 </div>
 

@@ -21,8 +21,24 @@ export function useUserModal({
     onError,
     onClose
 }: UseUserModalProps): UseUserModalReturn {
-    const [formData, setFormData] = useState<UserFormData>({});
-    const [initialData, setInitialData] = useState<UserFormData>({});
+    const [formData, setFormData] = useState<UserFormData>({
+        first_name: user?.first_name ?? '',
+        last_name: user?.last_name ?? '',
+        name: user?.name ?? '',
+        email: user?.email ?? '',
+        role: user?.role ?? '',
+        organization_id: user?.organization?.uuid ?? '',
+        password: ''
+    });
+    const [initialData, setInitialData] = useState<UserFormData>({
+        first_name: '',
+        last_name: '',
+        name: '',
+        email: '',
+        role: '',
+        organization_id: '',
+        password: ''
+    });
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [hasChanges, setHasChanges] = useState<boolean>(false);
@@ -31,18 +47,30 @@ export function useUserModal({
     // Reset form data when user changes
     useEffect(() => {
         if (user) {
-            const data = {
+            const data: UserFormData = {
+                first_name: user.first_name ?? '',
+                last_name: user.last_name ?? '',
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                organization_id: user.organization?.uuid
+                organization_id: user.organization?.uuid,
+                password: ''
             };
             setFormData(data);
             setInitialData(data);
             setHasChanges(false);
         } else {
-            setFormData({});
-            setInitialData({});
+            const emptyData: UserFormData = {
+                first_name: '',
+                last_name: '',
+                name: '',
+                email: '',
+                role: '',
+                organization_id: '',
+                password: ''
+            };
+            setFormData(emptyData);
+            setInitialData(emptyData);
             setHasChanges(false);
         }
     }, [user]);
