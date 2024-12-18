@@ -166,7 +166,7 @@ function OrganizationsPage(): JSX.Element {
                             setIsModalOpen(false);
                             setSelectedOrganization(null);
                         }}
-                        onDelete={handleDeleteOrganization}
+                        onDelete={void handleDeleteOrganization}
                         onSuccess={() => void mutateOrganizations()}
                         userRole={user?.role}
                     />

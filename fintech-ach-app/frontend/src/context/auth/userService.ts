@@ -8,11 +8,11 @@ export async function fetchUserData(): Promise<User> {
     if (!isUser(userData)) {
         console.error('Invalid user data:', userData);
         console.error('Validation details:', {
-            hasId: typeof (userData as any)?.id === 'string',
-            hasEmail: typeof (userData as any)?.email === 'string',
-            hasRole: typeof (userData as any)?.role === 'string',
-            hasValidRole: (userData as any)?.role ? Object.values(UserRole).includes(normalizeRole((userData as any).role)) : false,
-            hasRequiredFields: Boolean((userData as any)?.id && (userData as any)?.email && (userData as any)?.role)
+            hasId: typeof userData.id === 'string',
+            hasEmail: typeof userData.email === 'string',
+            hasRole: typeof userData.role === 'string',
+            hasValidRole: userData.role ? Object.values(UserRole).includes(normalizeRole(userData.role)) : false,
+            hasRequiredFields: Boolean(userData?.id && userData?.email && userData?.role)
         });
         throw new Error('Invalid user data received');
     }
