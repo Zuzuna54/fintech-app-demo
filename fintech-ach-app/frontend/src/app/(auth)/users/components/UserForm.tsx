@@ -41,13 +41,13 @@ export function UserForm({
     user,
     formData,
     isSubmitting,
-    isDeleting,
-    canEdit,
-    canDelete,
-    hasChanges,
+    // isDeleting,
+    // canEdit,
+    // canDelete,
+    // hasChanges,
     onSubmit,
     onChange,
-    onDelete
+    // onDelete
 }: UserFormProps): JSX.Element {
     const [errors, setErrors] = useState<FormErrors>({});
     const [organizations, setOrganizations] = useState<Organization[]>([]);

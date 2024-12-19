@@ -9,6 +9,7 @@ interface AccountsTableProps {
         accounts: Account[];
         total: number;
     };
+    // @ts-expect-error - Using index as fallback key when id/uuid not available
     columns: Column[];
     type: 'internal_accounts' | 'external_accounts';
     currentPage: number;

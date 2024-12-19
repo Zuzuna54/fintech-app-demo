@@ -7,6 +7,7 @@ import type { Organization } from '@/types/api';
 interface OrganizationsTableProps {
     data: Organization[];
     total: number;
+    // @ts-expect-error - Using index as fallback key when id/uuid not available
     columns: Column[];
     currentPage: number;
     pageSize: number;

@@ -42,4 +42,6 @@ export interface EmptyStateProps<T = Account | Payment | Organization | Extended
     total: number;
 }
 
+export type TableItem = Account | Payment | Organization | User;
+
 export type { AccountsData, PaymentsData, OrganizationsData };

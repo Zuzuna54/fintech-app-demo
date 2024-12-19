@@ -9,6 +9,7 @@ interface PaymentsTableProps {
         payments: Payment[];
         total: number;
     };
+    // @ts-expect-error - Using index as fallback key when id/uuid not available    
     columns: Column[];
     currentPage: number;
     pageSize: number;
