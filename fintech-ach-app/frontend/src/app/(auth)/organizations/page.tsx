@@ -4,8 +4,7 @@ import React, { useState, useCallback } from 'react';
 import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { fetcher } from '@/lib/api';
-import { useAuth, withAuth } from '@/context/auth';
+import { useAuth, withAuth } from '@/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { UserRole } from '@/types/auth';
@@ -15,7 +14,7 @@ import { OrganizationModal } from '../../../components/modals/OrganizationModal/
 import type { Column, SortConfig } from '@/types/table';
 import { OrganizationForm } from './components/OrganizationForm';
 import type { Organization } from '@/types/api';
-import { api } from '@/lib/api';
+import { api, fetcher } from '@/lib/api';
 
 const columns: Column[] = [
     { header: 'Name', accessor: 'name', type: 'text', sortable: true },

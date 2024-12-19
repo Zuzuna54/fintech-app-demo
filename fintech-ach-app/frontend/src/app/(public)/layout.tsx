@@ -9,7 +9,7 @@ export default function PublicLayout({
 }): JSX.Element {
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
+            <div className="flex min-h-full flex-col justify-center">
                 {children}
             </div>
         </div>

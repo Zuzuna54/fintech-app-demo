@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Account } from '@/types';
 import { api } from '@/lib/api';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 import { AccountFormData, UseAccountModalReturn } from '@/types/forms';
 import { UserRole } from '@/types/auth';
 

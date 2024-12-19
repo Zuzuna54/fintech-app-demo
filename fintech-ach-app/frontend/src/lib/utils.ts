@@ -1,3 +1,44 @@
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+/**
+ * Combines class names using clsx and tailwind-merge
+ */
+export function cn(...inputs: ClassValue[]): string {
+    return twMerge(clsx(inputs));
+}
+
+/**
+ * Formats a date string to a localized format
+ */
+export function formatDate(date: string | Date): string {
+    return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+/**
+ * Formats a currency amount
+ */
+export function formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+    }).format(amount);
+}
+
+/**
+ * Extracts error message from various error types
+ */
+export function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    return 'An unknown error occurred';
+}
+
+
 import { jwtDecode } from 'jwt-decode';
 import { TokenPayload } from '@/types/auth';
 

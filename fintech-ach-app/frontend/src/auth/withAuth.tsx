@@ -1,5 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable react-hooks/rules-of-hooks */
 'use client';
-
 import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from './AuthProvider';
@@ -52,13 +53,13 @@ export function withAuth<P extends object>(
 
                     // Handle authenticated users trying to access login page
                     if (isAuthenticated && pathname === '/login') {
-                        const redirectUrl = sessionStorage.getItem('redirectUrl') || '/accounts';
+                        const redirectUrl = sessionStorage.getItem('redirectUrl') ?? '/accounts';
                         sessionStorage.removeItem('redirectUrl');
                         router.push(redirectUrl);
                         return;
                     }
                 }
-            }, [isLoading, isAuthenticated, user, router, pathname]);
+            }, [isLoading, isAuthenticated, user, router, pathname, allowedRoles, requireAuth, redirectTo]);
 
             // Show loading state
             if (isLoading) {

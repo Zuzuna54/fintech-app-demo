@@ -1,5 +1,5 @@
 import { AuthState, User } from '@/types/auth';
-import { getToken } from './utils';
+import { getToken } from '../lib/authUtils';
 
 // Initial state
 export const initialState: AuthState = {

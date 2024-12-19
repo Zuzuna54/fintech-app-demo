@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { UserRole } from '@/types/auth';
 
@@ -45,15 +45,20 @@ export default function Home(): JSX.Element {
     }, [isLoading, isAuthenticated, user, router]);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center">
-            <div className="space-y-4 text-center">
-                <LoadingSpinner className="w-8 h-8" />
-                <h2 className="text-xl font-semibold text-gray-700">
-                    Initializing Application...
-                </h2>
-                <p className="text-sm text-gray-500">
-                    Please wait while we set up your workspace
-                </p>
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-100 flex flex-col justify-center items-center p-8">
+            <div className="space-y-8 text-center max-w-lg w-full">
+                <div className="bg-white p-10 rounded-2xl shadow-xl border border-blue-200 transition-all duration-300 hover:shadow-2xl">
+                    <h2 className="text-3xl font-bold text-gray-900 mt-8 tracking-tight">
+                        Preparing Your Financial Dashboard
+                    </h2>
+                    <p className="text-lg text-gray-600 mt-4 font-medium">
+                        Setting up your secure banking environment
+                    </p>
+                    <LoadingSpinner
+                        size="large"
+                        className="text-blue-600 mx-auto"
+                    />
+                </div>
             </div>
         </div>
     );
