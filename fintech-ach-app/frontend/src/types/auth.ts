@@ -1,7 +1,5 @@
-export interface Organization {
-    id: string;
-    name: string;
-}
+import { Organization } from "./api";
+
 
 export interface User {
     id: string;

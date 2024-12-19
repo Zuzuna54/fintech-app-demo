@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 
 export default function UnauthorizedPage(): JSX.Element {
     const router = useRouter();

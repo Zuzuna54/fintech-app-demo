@@ -16,7 +16,7 @@ import { OrganizationForm } from './components/OrganizationForm';
 import type { Organization } from '@/types/api';
 import { api, fetcher } from '@/lib/api';
 
-const columns: Column[] = [
+const columns: Column<Organization>[] = [
     { header: 'Name', accessor: 'name', type: 'text', sortable: true },
     { header: 'Description', accessor: 'description', type: 'text', sortable: true },
     { header: 'Status', accessor: 'status', type: 'status', sortable: true },

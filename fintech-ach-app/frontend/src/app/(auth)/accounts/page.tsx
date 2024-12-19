@@ -18,7 +18,7 @@ import { AccountsTabs } from './components/AccountsTabs';
 import { InternalAccountsTab } from './components/InternalAccountsTab';
 import { ExternalAccountsTab } from './components/ExternalAccountsTab';
 
-const columns: Column[] = [
+const columns: Column<Account>[] = [
     { header: 'Name', accessor: 'name', type: 'text', sortable: true },
     { header: 'Account Type', accessor: 'account_type', type: 'text', sortable: true },
     { header: 'Balance', accessor: 'balance', type: 'currency', sortable: true },

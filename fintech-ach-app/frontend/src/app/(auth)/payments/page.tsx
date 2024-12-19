@@ -15,8 +15,9 @@ import { UserRole } from '@/types/auth';
 import { PaymentsHeader } from './components/PaymentsHeader';
 import { PaymentsTable } from './components/PaymentsTable';
 import { PaymentFormSection } from './components/PaymentFormSection';
+import type { Payment } from '@/types';
 
-const columns: Column[] = [
+const columns: Column<Payment>[] = [
     { header: 'Amount', accessor: 'amount', type: 'currency', sortable: true },
     { header: 'Status', accessor: 'status', type: 'status', sortable: true },
     { header: 'Description', accessor: 'description', type: 'text', sortable: true },

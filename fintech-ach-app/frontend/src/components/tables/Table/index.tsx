@@ -3,7 +3,7 @@ import { Column, SortConfig } from '@/types/table';
 import { Payment, PaymentsData } from '@/types/payments';
 import { Account, AccountsData } from '@/types/accounts';
 import { Organization, OrganizationsData } from '@/types/api';
-import { User } from '@/types';
+import { ExtendedUser, User } from '@/types';
 import { TableHeader } from './TableHeader';
 import { TableBody } from './TableBody';
 import { TableFooter } from './TableFooter';
@@ -15,10 +15,10 @@ interface UsersData {
 }
 
 export interface TableProps {
-    columns: Column[];
+    columns: Column<Account | Payment | Organization | User | ExtendedUser>[];
     data: AccountsData | PaymentsData | OrganizationsData | UsersData;
     type: 'internal_accounts' | 'external_accounts' | 'payments' | 'organizations' | 'users';
-    onRowClick?: (item: Account | Payment | Organization | User) => void;
+    onRowClick?: (item: Account | Payment | Organization | User | ExtendedUser) => void;
     sortConfig?: SortConfig;
     onSort?: (config: SortConfig) => void;
 }
@@ -41,7 +41,7 @@ export function Table({
 
     const total = data.total;
 
-    const handleSort = (column: Column): void => {
+    const handleSort = (column: Column<Account | Payment | Organization | User | ExtendedUser>): void => {
         if (!column.sortable || !onSort) return;
 
         const key = column.accessor;
