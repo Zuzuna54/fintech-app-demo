@@ -1,4 +1,4 @@
-import useSWR, { SWRResponse } from 'swr';
+import useSWR from 'swr';
 import { User } from '@/types';
 import { api } from '@/lib/api';
 
@@ -17,7 +17,7 @@ interface UseUsersParams {
     organizationId?: string;
 }
 
-export function useUsers(params?: UseUsersParams): SWRResponse<UsersResponse, Error> {
+export function useUsers(params?: UseUsersParams) {
     const queryParams = new URLSearchParams();
 
     if (params?.limit) queryParams.append('limit', params.limit.toString());
@@ -29,8 +29,8 @@ export function useUsers(params?: UseUsersParams): SWRResponse<UsersResponse, Er
     const queryString = queryParams.toString();
     const url = `/management/users${queryString ? `?${queryString}` : ''}`;
 
-    return useSWR<UsersResponse, Error>(url, async () => {
-        const response = await api.get<UsersResponse>(url);
+    return useSWR<UsersResponse>(url, async () => {
+        const response = await api.get(url);
         return response.data;
     }, {
         revalidateOnFocus: false,

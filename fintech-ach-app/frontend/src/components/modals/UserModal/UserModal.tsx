@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { formatDate } from '@/lib/utils';
 import { api } from '@/lib/api';
-import { Organization, User } from '@/types';
+import { User } from '@/types';
 import { UserRole } from '@/types/auth';
 import { useOrganizations } from '@/hooks/useOrganizations';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -56,7 +55,8 @@ export function UserModal({
     });
     const [errors, setErrors] = useState<FormErrors>({});
     const [hasChanges, setHasChanges] = useState(false);
-    const { data: organizationsData, error: organizationsError } = useOrganizations() as { data: { organizations: Organization[]; total: number; } | undefined; error: Error | undefined };
+    const { data: organizationsData, error: organizationsError } = useOrganizations();
+
     React.useEffect(() => {
         if (user) {
             setFormData({
@@ -107,7 +107,6 @@ export function UserModal({
             newErrors.role = 'Role is required';
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
         if (formData.role === UserRole.ORGANIZATION_ADMIN && !formData.organization_id) {
             newErrors.organization_id = 'Organization is required for admin users';
         }

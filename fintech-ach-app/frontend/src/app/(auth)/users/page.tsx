@@ -32,8 +32,8 @@ function UsersPage(): JSX.Element {
         limit: pageSize,
         offset: (currentPage - 1) * pageSize,
         sortBy: sortConfig.key,
-        sortDirection: sortConfig.direction ?? undefined
-    }) as { data: { data: User[]; total: number; } | undefined; isLoading: boolean; error: Error | undefined; mutate: () => Promise<void> };
+        sortDirection: sortConfig.direction || undefined
+    });
 
     const handlePageChange = useCallback((page: number): void => {
         setCurrentPage(page);
@@ -52,7 +52,7 @@ function UsersPage(): JSX.Element {
 
     const handleUserClick = useCallback((item: Account | Payment | Organization | User): void => {
         if ('email' in item && 'role' in item) {
-            setSelectedUser(item);
+            setSelectedUser(item as User);
             setIsModalOpen(true);
         }
     }, []);
@@ -107,12 +107,11 @@ function UsersPage(): JSX.Element {
                                 canEdit={true}
                                 canDelete={true}
                                 hasChanges={false}
-                                // eslint-disable-next-line @typescript-eslint/require-await
                                 onSubmit={async (e) => {
                                     e.preventDefault();
-                                    void handleUserSuccess();
+                                    await handleUserSuccess();
                                 }}
-                                onChange={() => {
+                                onChange={(field, value) => {
                                     // Handle changes
                                 }}
                                 onDelete={async () => {
@@ -165,7 +164,6 @@ function UsersPage(): JSX.Element {
                             setIsModalOpen(false);
                             setSelectedUser(null);
                         }}
-                        // eslint-disable-next-line @typescript-eslint/no-misused-promises
                         onDelete={handleDeleteUser}
                         onSuccess={() => void mutate()}
                         userRole={user?.role}
