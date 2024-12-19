@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, func, or_
+from sqlalchemy.orm import joinedload
 from typing import List, Optional, Union
 from pydantic import BaseModel, UUID4, EmailStr, validator
 from datetime import datetime
@@ -337,92 +338,133 @@ async def create_user(
         
         # Convert role to enum
         try:
-            role_enum = UserRole(role)
-            logger.info(f"[CREATE_USER] Role enum value: {role_enum}")
-        except ValueError:
-            logger.error(f"[CREATE_USER] Invalid role value: {role}")
-            raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {[r.value for r in UserRole]}")
-        
-        # Log the user data before validation
-        logger.info(f"[CREATE_USER] User data before validation: {user_data}")
-        
-        # Validate against appropriate model
-        try:
-            logger.info(f"[CREATE_USER] Validating user data for role: {role_enum}")
-            # Remove role from user_data since we'll pass it separately
-            user_data.pop("role", None)
-            if role_enum == UserRole.SUPERUSER:
-                logger.info("[CREATE_USER] Creating superuser")
-                user = UserCreate(**user_data, role=role_enum)
-            elif role_enum == UserRole.ORGANIZATION_ADMIN:
-                logger.info("[CREATE_USER] Creating organization admin")
-                if "organization_id" not in user_data:
-                    logger.error("[CREATE_USER] Organization ID missing for admin user")
-                    raise HTTPException(status_code=400, detail="Organization ID is required for admin users")
-                user = AdminCreate(**user_data, role=role_enum)
-                # Verify organization exists
-                logger.info(f"[CREATE_USER] Verifying organization exists: {user.organization_id}")
-                org_result = await session.execute(
-                    select(Organization).where(Organization.id == user.organization_id)
-                )
-                org = org_result.scalar_one_or_none()
-                if not org:
-                    logger.error(f"[CREATE_USER] Organization not found: {user.organization_id}")
-                    raise HTTPException(status_code=404, detail="Organization not found")
-                logger.info("[CREATE_USER] Organization verified successfully")
+            # Normalize role string
+            role = role.upper().replace('_', '')
+            if role == 'SUPERUSER':
+                role_enum = UserRole.SUPERUSER
+            elif role in ['ORGANIZATIONADMIN', 'ORGADMIN']:
+                role_enum = UserRole.ORGANIZATION_ADMIN
             else:
-                logger.error(f"[CREATE_USER] Invalid role type: {role_enum}")
-                raise HTTPException(status_code=400, detail="Invalid role")
-        except ValueError as e:
-            logger.error(f"[CREATE_USER] Validation error: {str(e)}")
-            raise HTTPException(status_code=400, detail=str(e))
+                raise ValueError(f"Invalid role: {role}")
+                
+            logger.info(f"[CREATE_USER] Role enum value: {role_enum}")
+            
+            # Update role in user_data with the string value expected by the model
+            user_data["role"] = role_enum.value
+            
+            # Validate against appropriate model
+            try:
+                logger.info(f"[CREATE_USER] Validating user data for role: {role_enum}")
+                if role_enum == UserRole.SUPERUSER:
+                    logger.info("[CREATE_USER] Creating superuser")
+                    user = UserCreate(**user_data)
+                elif role_enum == UserRole.ORGANIZATION_ADMIN:
+                    logger.info("[CREATE_USER] Creating organization admin")
+                    if "organization_id" not in user_data:
+                        logger.error("[CREATE_USER] Organization ID missing for admin user")
+                        raise HTTPException(status_code=400, detail="Organization ID is required for admin users")
+                    user = AdminCreate(**user_data)
+                    # Verify organization exists
+                    logger.info(f"[CREATE_USER] Verifying organization exists: {user.organization_id}")
+                    org_result = await session.execute(
+                        select(Organization).where(Organization.id == user.organization_id)
+                    )
+                    org = org_result.scalar_one_or_none()
+                    if not org:
+                        logger.error(f"[CREATE_USER] Organization not found: {user.organization_id}")
+                        raise HTTPException(status_code=404, detail="Organization not found")
+                    logger.info("[CREATE_USER] Organization verified successfully")
+                else:
+                    logger.error(f"[CREATE_USER] Invalid role type: {role_enum}")
+                    raise HTTPException(status_code=400, detail="Invalid role")
+            except ValueError as e:
+                logger.error(f"[CREATE_USER] Validation error: {str(e)}")
+                raise HTTPException(status_code=400, detail=str(e))
 
-        # Check if email already exists in either table
-        logger.info(f"[CREATE_USER] Checking if email exists: {user.email}")
-        superuser_result = await session.execute(
-            select(SuperUser).where(SuperUser.email == user.email)
-        )
-        admin_result = await session.execute(
-            select(OrganizationAdministrator).where(OrganizationAdministrator.email == user.email)
-        )
-        
-        if superuser_result.scalar_one_or_none() or admin_result.scalar_one_or_none():
-            logger.error(f"[CREATE_USER] Email already exists: {user.email}")
-            raise HTTPException(status_code=400, detail="Email already registered")
-        
-        # Create user with hashed password
-        logger.info("[CREATE_USER] Creating user with hashed password")
-        user_dict = user.model_dump()
-        logger.info(f"[CREATE_USER] User dict after model_dump: {user_dict}")
-        
-        password = user_dict.pop("password")
-        user_dict.pop("role", None)  # Remove role since it's handled by model defaults
-        hashed_password = auth_service.get_password_hash(password)
-        
-        logger.info(f"[CREATE_USER] Final user dict before creation: {user_dict}")
-        
-        if role_enum == UserRole.SUPERUSER:
-            new_user = SuperUser(
-                **user_dict,
-                hashed_password=hashed_password
+            # Check if email already exists in either table
+            logger.info(f"[CREATE_USER] Checking if email exists: {user.email}")
+            superuser_result = await session.execute(
+                select(SuperUser).where(SuperUser.email == user.email)
             )
-        else:
-            new_user = OrganizationAdministrator(
-                **user_dict,
-                hashed_password=hashed_password
+            admin_result = await session.execute(
+                select(OrganizationAdministrator).where(OrganizationAdministrator.email == user.email)
             )
-        
-        logger.info("[CREATE_USER] Adding user to session")
-        session.add(new_user)
-        await session.commit()
-        await session.refresh(new_user)
-        logger.info(f"[CREATE_USER] User created successfully: {new_user.id}")
-        return new_user
-        
+            
+            if superuser_result.scalar_one_or_none() or admin_result.scalar_one_or_none():
+                logger.error(f"[CREATE_USER] Email already exists: {user.email}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Email already registered: {user.email}. Please use a different email address."
+                )
+            
+            # Create user with hashed password
+            logger.info("[CREATE_USER] Creating user with hashed password")
+            user_dict = user.model_dump()
+            logger.info(f"[CREATE_USER] User dict after model_dump: {user_dict}")
+            
+            password = user_dict.pop("password")
+            user_dict.pop("role", None)  # Remove role since it's handled by model defaults
+            hashed_password = auth_service.get_password_hash(password)
+            
+            logger.info(f"[CREATE_USER] Final user dict before creation: {user_dict}")
+            
+            if role_enum == UserRole.SUPERUSER:
+                new_user = SuperUser(
+                    **user_dict,
+                    hashed_password=hashed_password,
+                    role=role_enum
+                )
+                session.add(new_user)
+                await session.commit()
+                await session.refresh(new_user)
+                return new_user
+            else:
+                new_user = OrganizationAdministrator(
+                    **user_dict,
+                    hashed_password=hashed_password,
+                    role=role_enum
+                )
+                session.add(new_user)
+                await session.commit()
+                
+                # Reload the user with organization relationship
+                result = await session.execute(
+                    select(OrganizationAdministrator)
+                    .options(joinedload(OrganizationAdministrator.organization))
+                    .where(OrganizationAdministrator.id == new_user.id)
+                )
+                loaded_user = result.unique().scalar_one()
+                
+                # Format the response
+                return {
+                    'id': str(loaded_user.id),
+                    'email': loaded_user.email,
+                    'first_name': loaded_user.first_name,
+                    'last_name': loaded_user.last_name,
+                    'role': loaded_user.role.upper() if loaded_user.role else None,
+                    'organization_id': str(loaded_user.organization_id) if loaded_user.organization_id else None,
+                    'created_at': loaded_user.created_at,
+                    'updated_at': loaded_user.updated_at,
+                    'organization': {
+                        'id': str(loaded_user.organization.id),
+                        'name': loaded_user.organization.name,
+                        'description': loaded_user.organization.description,
+                        'status': loaded_user.organization.status,
+                        'created_at': loaded_user.organization.created_at,
+                        'updated_at': loaded_user.organization.updated_at
+                    } if loaded_user.organization else None
+                }
+            
+        except ValueError as e:
+            logger.error(f"[CREATE_USER] Role conversion error: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {[r.value for r in UserRole]}")
+            
     except HTTPException:
+        await session.rollback()
         raise
     except Exception as e:
         logger.error(f"[CREATE_USER] Unexpected error: {str(e)}", exc_info=True)
+        await session.rollback()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @router.get("/users", response_model=UsersResponse)
@@ -553,7 +595,7 @@ async def list_users(
                     else:
                         # Standard sorting for other fields
                         all_users.sort(
-                            key=lambda x: (getattr(x, sort_by) or '').lower() if isinstance(getattr(x, sort_by, ''), str) else (getattr(x, sort_by) or ''),
+                            key=lambda x: (x.get(sort_by) or '').lower() if isinstance(x.get(sort_by, ''), str) else (x.get(sort_by) or ''),
                             reverse=(sort_direction == 'desc')
                         )
                 except Exception as sort_error:
@@ -627,8 +669,12 @@ async def update_user(
     user_type = SuperUser if user else None
     
     if not user:
-        # Try to find in organization admins
-        admin_result = await session.execute(select(OrganizationAdministrator).where(OrganizationAdministrator.id == user_id))
+        # Try to find in organization admins with organization join
+        admin_result = await session.execute(
+            select(OrganizationAdministrator)
+            .options(joinedload(OrganizationAdministrator.organization))
+            .where(OrganizationAdministrator.id == user_id)
+        )
         user = admin_result.scalar_one_or_none()
         user_type = OrganizationAdministrator if user else None
     
@@ -647,6 +693,50 @@ async def update_user(
         .returning(user_type)
     )
     updated_user = result.scalar_one_or_none()
+    
+    # If it's an admin, reload with organization
+    if user_type == OrganizationAdministrator:
+        result = await session.execute(
+            select(OrganizationAdministrator)
+            .options(joinedload(OrganizationAdministrator.organization))
+            .where(OrganizationAdministrator.id == user_id)
+        )
+        updated_user = result.scalar_one_or_none()
+        
+        # Format the organization data as a dictionary
+        if updated_user and updated_user.organization:
+            org = updated_user.organization
+            updated_user = {
+                'id': str(updated_user.id),
+                'email': updated_user.email,
+                'first_name': updated_user.first_name,
+                'last_name': updated_user.last_name,
+                'role': updated_user.role.upper() if updated_user.role else None,
+                'organization_id': str(updated_user.organization_id) if updated_user.organization_id else None,
+                'created_at': updated_user.created_at,
+                'updated_at': updated_user.updated_at,
+                'organization': {
+                    'id': str(org.id),
+                    'name': org.name,
+                    'description': org.description,
+                    'status': org.status,
+                    'created_at': org.created_at,
+                    'updated_at': org.updated_at
+                }
+            }
+    else:
+        # Format superuser data
+        updated_user = {
+            'id': str(updated_user.id),
+            'email': updated_user.email,
+            'first_name': updated_user.first_name,
+            'last_name': updated_user.last_name,
+            'role': updated_user.role.upper() if updated_user.role else None,
+            'created_at': updated_user.created_at,
+            'updated_at': updated_user.updated_at,
+            'organization': None
+        }
+    
     await session.commit()
     return updated_user
 

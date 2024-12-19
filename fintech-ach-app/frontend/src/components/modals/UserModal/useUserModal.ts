@@ -121,7 +121,11 @@ export function useUserModal({
             onClose();
         } catch (error) {
             console.error('User operation error:', error);
-            onError(error as Error);
+            if (error.response?.status === 400 && error.response?.data?.detail?.includes('Email already registered')) {
+                onError(new Error('This email is already registered'));
+            } else {
+                onError(error as Error);
+            }
         } finally {
             setIsSubmitting(false);
         }

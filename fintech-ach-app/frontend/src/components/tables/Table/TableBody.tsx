@@ -1,25 +1,25 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Badge, getStatusBadgeVariant } from '@/components/ui/Badge';
-import { Column } from '@/types/table';
-import { Account, Payment, Organization, User } from '@/types';
+import { Column, TableItem } from '@/types/table';
+// import { Account, Payment, Organization, User } from '@/types';
 
-type TableItem = Account | Payment | Organization | User;
+
 
 interface TableBodyProps {
-    columns: Column[];
+    columns: Column<TableItem>[];
     items: TableItem[];
     onRowClick?: (item: TableItem) => void;
 }
 
 const hasId = (item: TableItem): item is TableItem & { id: string | number } => 'id' in item;
 const hasUuid = (item: TableItem): item is TableItem & { uuid: string } => 'uuid' in item;
-
 export function TableBody({ columns, items, onRowClick }: TableBodyProps): JSX.Element {
-    const renderCellValue = (item: TableItem, column: Column): React.ReactNode => {
+    const renderCellValue = (item: TableItem, column: Column<TableItem>): React.ReactNode => {
         if (column.cell) {
-            return column.cell({ getValue: () => item[column.accessor as keyof TableItem], row: { original: item } });
+            return column.cell({ getValue: () => item[column.accessor], row: { original: item } });
         }
 
         const value = item[column.accessor as keyof TableItem];
@@ -74,7 +74,7 @@ export function TableBody({ columns, items, onRowClick }: TableBodyProps): JSX.E
             <AnimatePresence mode="wait">
                 {items.map((item, index) => (
                     <motion.tr
-                        // @ts-ignore
+                        // @ts-expect-error - Using index as fallback key when id/uuid not available
                         key={hasId(item) ? item.id : hasUuid(item) ? item.uuid : index}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}

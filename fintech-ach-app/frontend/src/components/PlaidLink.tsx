@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { usePlaidLink, PlaidLinkOptions, PlaidLinkOnSuccessMetadata } from 'react-plaid-link';
+import {
+    usePlaidLink, PlaidLinkOptions,
+    // PlaidLinkOnSuccessMetadata 
+} from 'react-plaid-link';
 import { Link as LinkIcon } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -64,7 +67,9 @@ export function PlaidLink({ organizationId, onSuccess, onError, children }: Plai
     }, [linkToken, shouldReinitialize, initPlaid]);
 
     const onPlaidSuccess = useCallback(
-        async (publicToken: string, metadata: PlaidLinkOnSuccessMetadata) => {
+        async (publicToken: string,
+            // metadata: PlaidLinkOnSuccessMetadata
+        ) => {
             try {
                 setIsLinking(true);
                 const response = await api.post<ExchangeTokenResponse>('/plaid/exchange_token', {
@@ -96,7 +101,9 @@ export function PlaidLink({ organizationId, onSuccess, onError, children }: Plai
         receivedRedirectUri: undefined,
         env: (process.env.NEXT_PUBLIC_PLAID_ENV as 'sandbox' | 'development' | 'production') ?? 'sandbox',
         onSuccess: (public_token, metadata) => {
-            void onPlaidSuccess(public_token, metadata);
+            void onPlaidSuccess(public_token,
+                // metadata
+            );
         },
         onExit: () => {
             if (mountedRef.current) {

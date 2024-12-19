@@ -36,7 +36,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
     static getDerivedStateFromError(error: Error): State {
         return {
             error,
-            componentStack: error.stack || null
+            componentStack: error.stack ?? null
         };
     }
 

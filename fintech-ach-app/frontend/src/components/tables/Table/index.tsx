@@ -1,5 +1,5 @@
 import React from 'react';
-import { Column, SortConfig } from '@/types/table';
+import { Column, SortConfig, TableItem } from '@/types/table';
 import { Payment, PaymentsData } from '@/types/payments';
 import { Account, AccountsData } from '@/types/accounts';
 import { Organization, OrganizationsData } from '@/types/api';
@@ -58,12 +58,12 @@ export function Table({
             <div className="h-[480px] overflow-auto">
                 <table className="min-w-full">
                     <TableHeader
-                        columns={columns}
+                        columns={columns as Column<TableItem>[]}
                         sortConfig={sortConfig}
-                        onSort={handleSort}
+                        onSort={handleSort as (column: Column<TableItem>) => void}
                     />
                     <TableBody
-                        columns={columns}
+                        columns={columns as Column<TableItem>[]}
                         items={items}
                         onRowClick={onRowClick}
                     />

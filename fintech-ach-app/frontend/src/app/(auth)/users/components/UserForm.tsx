@@ -9,18 +9,15 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { api } from '@/lib/api';
 import { Organization } from '@/types/api';
 import { UserFormData } from '@/types/forms';
+import { XCircle } from 'lucide-react';
 
 interface UserFormProps {
-    user?: User;
     formData: UserFormData;
     isSubmitting: boolean;
-    isDeleting: boolean;
-    canEdit: boolean;
-    canDelete: boolean;
-    hasChanges: boolean;
     onSubmit: (e: React.FormEvent) => Promise<void>;
-    onChange: (field: keyof User | 'password', value: string) => void;
-    onDelete: () => Promise<void>;
+    onChange: (field: keyof UserFormData, value: string) => void;
+    errors: FormErrors;
+    setErrors: (errors: FormErrors) => void;
 }
 
 interface FormErrors {
@@ -30,6 +27,7 @@ interface FormErrors {
     role?: string;
     organization_id?: string;
     password?: string;
+    general?: string;
 }
 
 interface OrganizationsResponse {
@@ -38,18 +36,13 @@ interface OrganizationsResponse {
 }
 
 export function UserForm({
-    user,
     formData,
     isSubmitting,
-    isDeleting,
-    canEdit,
-    canDelete,
-    hasChanges,
     onSubmit,
     onChange,
-    onDelete
+    errors,
+    setErrors
 }: UserFormProps): JSX.Element {
-    const [errors, setErrors] = useState<FormErrors>({});
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(false);
     const [organizationsError, setOrganizationsError] = useState<string | null>(null);
@@ -80,15 +73,15 @@ export function UserForm({
     const validateForm = (): boolean => {
         const newErrors: FormErrors = {};
 
-        if (!formData.first_name.trim()) {
+        if (!formData.first_name?.trim()) {
             newErrors.first_name = 'First name is required';
         }
 
-        if (!formData.last_name.trim()) {
+        if (!formData.last_name?.trim()) {
             newErrors.last_name = 'Last name is required';
         }
 
-        if (!formData.email.trim()) {
+        if (!formData.email?.trim()) {
             newErrors.email = 'Email is required';
         } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
             newErrors.email = 'Invalid email address';
@@ -98,16 +91,24 @@ export function UserForm({
             newErrors.role = 'Role is required';
         }
 
-        if (formData.role === UserRole.ORGANIZATION_ADMIN && !formData.organization_id) {
+        const userRole = formData.role as UserRole;
+        if (userRole === UserRole.ORGANIZATION_ADMIN && !formData.organization_id) {
             newErrors.organization_id = 'Organization is required for admin users';
         }
 
-        if (!user && !formData.password) {
-            newErrors.password = 'Password is required for new users';
+        if (!formData.password) {
+            newErrors.password = 'Password is required';
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+        e.preventDefault();
+        if (validateForm()) {
+            await onSubmit(e);
+        }
     };
 
     return (
@@ -123,10 +124,25 @@ export function UserForm({
         >
             <Card>
                 <CardHeader>
-                    <CardTitle>{user ? 'Edit User' : 'Create User'}</CardTitle>
+                    <CardTitle>Create New User</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
+                    {errors.general && (
+                        <div className="mb-4 rounded-md bg-red-50 p-4">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <XCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-red-800">Error</h3>
+                                    <div className="mt-2 text-sm text-red-700">
+                                        {errors.general}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <Input
                                 label="First Name"
@@ -157,17 +173,15 @@ export function UserForm({
                             required
                         />
 
-                        {!user && (
-                            <Input
-                                label="Password"
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => onChange('password', e.target.value)}
-                                error={errors.password}
-                                disabled={isSubmitting}
-                                required
-                            />
-                        )}
+                        <Input
+                            label="Password"
+                            type="password"
+                            value={formData.password}
+                            onChange={(e) => onChange('password', e.target.value)}
+                            error={errors.password}
+                            disabled={isSubmitting}
+                            required
+                        />
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
@@ -181,52 +195,51 @@ export function UserForm({
                                 required
                             >
                                 <option value="">Select Role</option>
-                                <option value={UserRole.SUPERUSER}>Superuser</option>
-                                <option value={UserRole.ORGANIZATION_ADMIN}>Organization Admin</option>
+                                <option value="SUPERUSER">Superuser</option>
+                                <option value="ORGANIZATION_ADMIN">Organization Admin</option>
                             </Select>
                             {errors.role && (
                                 <p className="mt-1 text-sm text-red-600">{errors.role}</p>
                             )}
                         </div>
 
-                        {formData.role === UserRole.ORGANIZATION_ADMIN && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Organization
-                                </label>
-                                {organizationsError ? (
-                                    <p className="mt-1 text-sm text-red-600">{organizationsError}</p>
-                                ) : isLoadingOrganizations ? (
-                                    <div className="mt-2">
-                                        <LoadingSpinner size="small" />
-                                    </div>
-                                ) : (
-                                    <Select
-                                        value={formData.organization_id}
-                                        onChange={(e) => onChange('organization_id', e.target.value)}
-                                        className="mt-1"
-                                        disabled={isSubmitting}
-                                    >
-                                        <option value="">Select Organization</option>
-                                        {organizations.map((org) => (
-                                            <option key={org.id} value={org.id}>
-                                                {org.name}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                )}
-                                {errors.organization_id && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.organization_id}</p>
-                                )}
-                            </div>
-                        )}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">
+                                Organization
+                            </label>
+                            {organizationsError ? (
+                                <p className="mt-1 text-sm text-red-600">{organizationsError}</p>
+                            ) : isLoadingOrganizations ? (
+                                <div className="mt-2">
+                                    <LoadingSpinner size="small" />
+                                </div>
+                            ) : (
+                                <Select
+                                    value={formData.organization_id}
+                                    onChange={(e) => onChange('organization_id', e.target.value)}
+                                    className="mt-1"
+                                    disabled={isSubmitting}
+                                    required
+                                >
+                                    <option value="">Select Organization</option>
+                                    {organizations.map((org) => (
+                                        <option key={org.id} value={org.id}>
+                                            {org.name}
+                                        </option>
+                                    ))}
+                                </Select>
+                            )}
+                            {errors.organization_id && (
+                                <p className="mt-1 text-sm text-red-600">{errors.organization_id}</p>
+                            )}
+                        </div>
 
                         <div className="flex justify-end">
                             <Button
                                 type="submit"
                                 isLoading={isSubmitting}
                             >
-                                {user ? 'Update' : 'Create'}
+                                Create
                             </Button>
                         </div>
                     </form>
