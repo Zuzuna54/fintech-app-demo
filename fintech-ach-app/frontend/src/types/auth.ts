@@ -24,7 +24,7 @@ export function isUser(value: unknown): value is User {
     if (!value || typeof value !== 'object') return false;
 
     try {
-        const user = value as any;
+        const user = value as User;
 
         // Basic property checks
         const hasRequiredFields = (
@@ -94,6 +94,15 @@ export interface AuthState {
     token: string | null;
 }
 
+// Action types
+export type AuthAction =
+    | { type: 'AUTH_START' }
+    | { type: 'AUTH_SUCCESS'; payload: { user: User; lastLogin?: string } }
+    | { type: 'AUTH_FAILURE'; payload: string }
+    | { type: 'AUTH_LOGOUT' }
+    | { type: 'AUTH_UPDATE_USER'; payload: User }
+    | { type: 'CLEAR_ERROR' };
+
 export interface AuthContextType extends AuthState {
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
@@ -150,7 +159,7 @@ export function normalizeRole(role: string): UserRole {
 /**
  * Type guard to check if a value is a valid AuthResponse object
  */
-export function isAuthResponse(data: any): data is AuthResponse {
+export function isAuthResponse(data: AuthResponse): data is AuthResponse {
     return (
         data &&
         typeof data.access_token === 'string' &&

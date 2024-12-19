@@ -3,7 +3,7 @@ import { Table } from '@/components/tables/Table';
 import { AnimatedTableContainer } from '@/components/tables/Table/AnimatedTableContainer';
 import { User, Organization, Account, Payment } from '@/types';
 import { Badge } from '@/components/ui/Badge';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 import { UserRole } from '@/types/auth';
 import type { Column, SortConfig } from '@/types/table';
 
