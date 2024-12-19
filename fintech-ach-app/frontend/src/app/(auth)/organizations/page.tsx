@@ -16,7 +16,7 @@ import { OrganizationForm } from './components/OrganizationForm';
 import type { Organization } from '@/types/api';
 import { api, fetcher } from '@/lib/api';
 
-const columns: Column[] = [
+const columns: Column<Organization>[] = [
     { header: 'Name', accessor: 'name', type: 'text', sortable: true },
     { header: 'Description', accessor: 'description', type: 'text', sortable: true },
     { header: 'Status', accessor: 'status', type: 'status', sortable: true },
@@ -86,7 +86,12 @@ function OrganizationsPage(): JSX.Element {
             await api.delete(`/management/organizations/${organization.id}`);
             void mutateOrganizations();
         } catch (error) {
-            console.error('Error deleting organization:', error);
+            if (error instanceof Error && error.message.includes('foreign key constraint')) {
+                alert('Cannot delete organization because it has associated bank accounts. Please remove all bank accounts first.');
+            } else {
+                console.error('Error deleting organization:', error);
+                alert('Failed to delete organization. Please try again.');
+            }
         }
     }, [mutateOrganizations]);
 
@@ -165,7 +170,7 @@ function OrganizationsPage(): JSX.Element {
                             setIsModalOpen(false);
                             setSelectedOrganization(null);
                         }}
-                        onDelete={handleDeleteOrganization}
+                        onDelete={(org) => void handleDeleteOrganization(org)}
                         onSuccess={() => void mutateOrganizations()}
                         userRole={user?.role}
                     />

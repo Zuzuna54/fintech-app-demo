@@ -7,7 +7,15 @@ from datetime import datetime
 import logging
 
 from config.database import get_db
-from domain.sql_models import SuperUser, OrganizationAdministrator, Organization, UserRole
+from domain.sql_models import (
+    SuperUser, 
+    OrganizationAdministrator, 
+    Organization, 
+    UserRole, 
+    ExternalOrganizationBankAccount,
+    InternalOrganizationBankAccount,
+    Payment
+)
 from .roles import Role, RoleChecker
 from .service import AuthService, get_auth_service
 from .jwt import get_current_user
@@ -200,17 +208,113 @@ async def update_organization(
 async def delete_organization(
     org_id: UUID4,
     session: AsyncSession = Depends(get_db),
-   
 ):
-    """Delete an organization. Only superusers can delete organizations."""
-    result = await session.execute(
-        delete(Organization).where(Organization.id == org_id).returning(Organization)
-    )
-    deleted_org = result.scalar_one_or_none()
-    if not deleted_org:
-        raise HTTPException(status_code=404, detail="Organization not found")
-    await session.commit()
-    return {"message": "Organization deleted successfully"}
+    """Delete an organization and all its associated data. Only superusers can delete organizations."""
+    try:
+        logger.info(f"[DELETE_ORGANIZATION] Starting deletion process for organization {org_id}")
+
+        # Get all external bank accounts for this organization
+        logger.debug(f"[DELETE_ORGANIZATION] Fetching external bank accounts for org {org_id}")
+        ext_accounts_result = await session.execute(
+            select(ExternalOrganizationBankAccount.uuid).where(
+                ExternalOrganizationBankAccount.organization_id == org_id
+            )
+        )
+        ext_account_ids = [row[0] for row in ext_accounts_result]
+        logger.info(f"[DELETE_ORGANIZATION] Found {len(ext_account_ids)} external bank accounts")
+
+        # Get all internal bank accounts for this organization
+        logger.debug(f"[DELETE_ORGANIZATION] Fetching internal bank accounts for org {org_id}")
+        int_accounts_result = await session.execute(
+            select(InternalOrganizationBankAccount.uuid).where(
+                InternalOrganizationBankAccount.uuid.in_(
+                    select(Payment.to_account).where(
+                        Payment.from_account.in_(ext_account_ids)
+                    )
+                )
+            )
+        )
+        int_account_ids = [row[0] for row in int_accounts_result]
+        logger.info(f"[DELETE_ORGANIZATION] Found {len(int_account_ids)} internal bank accounts")
+
+        try:
+            # First, delete all payments associated with these accounts
+            if ext_account_ids:
+                logger.debug("[DELETE_ORGANIZATION] Deleting payments for external accounts")
+                await session.execute(
+                    delete(Payment).where(
+                        or_(
+                            Payment.from_account.in_(ext_account_ids),
+                            Payment.to_account.in_(ext_account_ids)
+                        )
+                    )
+                )
+
+            if int_account_ids:
+                logger.debug("[DELETE_ORGANIZATION] Deleting payments for internal accounts")
+                await session.execute(
+                    delete(Payment).where(
+                        or_(
+                            Payment.from_account.in_(int_account_ids),
+                            Payment.to_account.in_(int_account_ids)
+                        )
+                    )
+                )
+
+            # Then delete the bank accounts
+            if ext_account_ids:
+                logger.debug("[DELETE_ORGANIZATION] Deleting external bank accounts")
+                await session.execute(
+                    delete(ExternalOrganizationBankAccount).where(
+                        ExternalOrganizationBankAccount.organization_id == org_id
+                    )
+                )
+
+            if int_account_ids:
+                logger.debug("[DELETE_ORGANIZATION] Deleting internal bank accounts")
+                await session.execute(
+                    delete(InternalOrganizationBankAccount).where(
+                        InternalOrganizationBankAccount.uuid.in_(int_account_ids)
+                    )
+                )
+
+            # Delete all organization administrators
+            logger.debug("[DELETE_ORGANIZATION] Deleting organization administrators")
+            await session.execute(
+                delete(OrganizationAdministrator).where(
+                    OrganizationAdministrator.organization_id == org_id
+                )
+            )
+
+            # Finally delete the organization
+            logger.debug("[DELETE_ORGANIZATION] Deleting organization")
+            result = await session.execute(
+                delete(Organization).where(Organization.id == org_id).returning(Organization)
+            )
+            deleted_org = result.scalar_one_or_none()
+            
+            if not deleted_org:
+                logger.error(f"[DELETE_ORGANIZATION] Organization {org_id} not found")
+                raise HTTPException(status_code=404, detail="Organization not found")
+            
+            await session.commit()
+            logger.info(f"[DELETE_ORGANIZATION] Successfully deleted organization {org_id} and all associated data")
+            return {"message": "Organization and all associated data deleted successfully"}
+            
+        except Exception as inner_e:
+            logger.error(f"[DELETE_ORGANIZATION] Error during deletion operations: {str(inner_e)}", exc_info=True)
+            raise
+            
+    except HTTPException:
+        await session.rollback()
+        raise
+    except Exception as e:
+        logger.error(f"[DELETE_ORGANIZATION] Unexpected error: {str(e)}", exc_info=True)
+        await session.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to delete organization: {str(e)}"
+        )
 
 # User endpoints
 @router.post("/users", response_model=Union[UserResponse, AdminResponse])

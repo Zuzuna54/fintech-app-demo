@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -11,6 +12,8 @@ import { UserRole } from '@/types/auth';
 import { useOrganizations } from '@/hooks/useOrganizations';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Trash2, Save } from 'lucide-react';
+import { SWRResponse } from 'swr';
+import type { OrganizationsResponse } from '@/hooks/useOrganizations';
 
 interface UserFormProps {
     user: ExtendedUser | null;
@@ -40,7 +43,17 @@ interface FormErrors {
     organization_id?: string;
 }
 
-export function UserForm({ user, isSubmitting, isDeleting, canEdit, canDelete, hasChanges, onSubmit, onChange, onDelete }: UserFormProps): JSX.Element {
+export function UserForm({
+    user,
+    isSubmitting,
+    isDeleting,
+    // canEdit, 
+    canDelete,
+    // hasChanges, 
+    onSubmit,
+    // onChange, 
+    onDelete
+}: UserFormProps): JSX.Element {
     const [formData, setFormData] = useState<FormData>({
         first_name: user?.first_name ?? '',
         last_name: user?.last_name ?? '',
@@ -49,7 +62,8 @@ export function UserForm({ user, isSubmitting, isDeleting, canEdit, canDelete, h
         organization_id: user?.organization_id ?? ''
     });
     const [errors, setErrors] = useState<FormErrors>({});
-    const { data: organizationsData, error: organizationsError, isLoading } = useOrganizations();
+    const { data, error: organizationsError, isLoading } = useOrganizations() as SWRResponse<OrganizationsResponse, Error>;
+    const organizationsData = data?.organizations ?? [];
 
     useEffect(() => {
         if (user) {
@@ -104,7 +118,7 @@ export function UserForm({ user, isSubmitting, isDeleting, canEdit, canDelete, h
         }
 
         try {
-            onSubmit(e);
+            await onSubmit(e);
         } catch (error) {
             console.error('Error submitting form:', error);
         }
@@ -171,7 +185,7 @@ export function UserForm({ user, isSubmitting, isDeleting, canEdit, canDelete, h
                         <div className="mt-2">
                             <LoadingSpinner size="small" />
                         </div>
-                    ) : !organizationsData?.organizations?.length ? (
+                    ) : !organizationsData?.length ? (
                         <p className="mt-1 text-sm text-red-600">No organizations available</p>
                     ) : (
                         <Select
@@ -181,7 +195,7 @@ export function UserForm({ user, isSubmitting, isDeleting, canEdit, canDelete, h
                             disabled={isSubmitting}
                         >
                             <option value="">Select Organization</option>
-                            {organizationsData.organizations.map((org) => (
+                            {organizationsData.map((org) => (
                                 <option key={org.id} value={org.id}>
                                     {org.name}
                                 </option>

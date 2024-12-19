@@ -1,4 +1,4 @@
-import { AuthState, User } from '@/types/auth';
+import { AuthState, AuthAction } from '@/types/auth';
 import { getToken } from '../lib/authUtils';
 
 // Initial state
@@ -10,15 +10,6 @@ export const initialState: AuthState = {
     lastLogin: undefined,
     token: null
 };
-
-// Action types
-export type AuthAction =
-    | { type: 'AUTH_START' }
-    | { type: 'AUTH_SUCCESS'; payload: { user: User; lastLogin?: string } }
-    | { type: 'AUTH_FAILURE'; payload: string }
-    | { type: 'AUTH_LOGOUT' }
-    | { type: 'AUTH_UPDATE_USER'; payload: User }
-    | { type: 'CLEAR_ERROR' };
 
 // Reducer
 export function authReducer(state: AuthState, action: AuthAction): AuthState {

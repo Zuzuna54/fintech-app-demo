@@ -4,15 +4,15 @@ import useSWR from 'swr';
 import { Organization } from '@/types/api';
 import { api } from '@/lib/api';
 
-interface OrganizationsResponse {
+export interface OrganizationsResponse {
     organizations: Organization[];
     total: number;
 }
 
-export function useOrganizations() {
-    return useSWR<OrganizationsResponse>('/management/organizations', async (url) => {
+export function useOrganizations(): ReturnType<typeof useSWR<OrganizationsResponse>> {
+    return useSWR<OrganizationsResponse>('/management/organizations', async (url: string) => {
         const response = await api.get(url);
-        return response.data;
+        return response.data as OrganizationsResponse;
     }, {
         revalidateOnFocus: false,
         shouldRetryOnError: false

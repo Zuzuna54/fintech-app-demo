@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,10 +8,11 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { formatDate } from '@/lib/utils';
 import { api } from '@/lib/api';
-import { User } from '@/types';
+import { OrganizationsResponse, User } from '@/types';
 import { UserRole } from '@/types/auth';
 import { useOrganizations } from '@/hooks/useOrganizations';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { SWRResponse } from 'swr';
 
 interface UserModalProps {
     user: User | null;
@@ -55,7 +57,7 @@ export function UserModal({
     });
     const [errors, setErrors] = useState<FormErrors>({});
     const [hasChanges, setHasChanges] = useState(false);
-    const { data: organizationsData, error: organizationsError } = useOrganizations();
+    const { data: organizationsData, error: organizationsError } = useOrganizations() as SWRResponse<OrganizationsResponse, Error>;
 
     React.useEffect(() => {
         if (user) {

@@ -30,7 +30,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
     id,
     ...props
 }, ref) => {
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+    const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
 
     return (
         <div className="w-full">
@@ -82,7 +82,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
                     </div>
                 )}
             </div>
-            {(helperText || error) && (
+            {(helperText ?? error) && (
                 <p
                     id={error ? `${inputId}-error` : `${inputId}-description`}
                     className={cn(
@@ -90,7 +90,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
                         error ? 'text-red-600' : 'text-gray-500'
                     )}
                 >
-                    {error || helperText}
+                    {error ?? helperText}
                 </p>
             )}
         </div>

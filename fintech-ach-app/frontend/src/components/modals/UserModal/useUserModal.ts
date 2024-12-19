@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { User } from '@/types';
 import { api } from '@/lib/api';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 import { UserFormData, UseUserModalReturn } from '@/types/forms';
 import { UserRole } from '@/types/auth';
 import { ExtendedUser } from '@/types/auth';
@@ -42,7 +42,7 @@ export function useUserModal({
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [hasChanges, setHasChanges] = useState<boolean>(false);
-    const { user: currentUser } = useAuth();
+    const { user: currentUser } = useAuth()
 
     // Reset form data when user changes
     useEffect(() => {

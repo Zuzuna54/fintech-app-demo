@@ -3,8 +3,8 @@ import { Table } from '@/components/tables/Table';
 import { AnimatedTableContainer } from '@/components/tables/Table/AnimatedTableContainer';
 import { User, Organization, Account, Payment } from '@/types';
 import { Badge } from '@/components/ui/Badge';
-import { useAuth } from '@/context/auth';
-import { UserRole } from '@/types/auth';
+import { useAuth } from '@/auth';
+import { ExtendedUser, UserRole } from '@/types/auth';
 import type { Column, SortConfig } from '@/types/table';
 
 interface CellInfo {
@@ -39,7 +39,7 @@ export function UsersTable({
     const { user: currentUser } = useAuth();
     const canManageUsers = currentUser?.role === UserRole.SUPERUSER;
 
-    const columns: Column[] = [
+    const columns: Column<User>[] = [
         {
             header: 'Name',
             accessor: 'first_name' as const,
@@ -96,10 +96,13 @@ export function UsersTable({
             onPageChange={onPageChange}
         >
             <Table
-                columns={columns}
+                columns={columns as Column<User | Organization | Account | Payment | ExtendedUser>[]}
                 data={{ users: data, total }}
                 type="users"
-                onRowClick={canManageUsers ? onRowClick : undefined}
+                onRowClick={canManageUsers ? (item: User | Organization | Account | Payment | ExtendedUser) => {
+                    // Type assertion since we know this will only be called with User type in this context
+                    onRowClick(item as User | Account | Payment | Organization);
+                } : undefined}
                 sortConfig={sortConfig}
                 onSort={onSort}
             />

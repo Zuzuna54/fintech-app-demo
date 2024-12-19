@@ -17,7 +17,7 @@ interface UseUsersParams {
     organizationId?: string;
 }
 
-export function useUsers(params?: UseUsersParams) {
+export function useUsers(params?: UseUsersParams): ReturnType<typeof useSWR<UsersResponse>> {
     const queryParams = new URLSearchParams();
 
     if (params?.limit) queryParams.append('limit', params.limit.toString());
@@ -31,7 +31,7 @@ export function useUsers(params?: UseUsersParams) {
 
     return useSWR<UsersResponse>(url, async () => {
         const response = await api.get(url);
-        return response.data;
+        return response.data as UsersResponse;
     }, {
         revalidateOnFocus: false,
         shouldRetryOnError: false

@@ -1,4 +1,4 @@
-import { Payment } from "./payments";
+
 
 export enum AccountStatus {
     PENDING = 'PENDING',
@@ -56,10 +56,5 @@ export interface AccountsResponse {
  */
 export interface AccountsData {
     accounts: Account[];
-    total: number;
-}
-
-export interface PaymentsData {
-    payments: Payment[];
     total: number;
 }
