@@ -109,7 +109,7 @@ function UsersPage(): JSX.Element {
                                 hasChanges={false}
                                 onSubmit={async (e) => {
                                     e.preventDefault();
-                                    await handleUserSuccess();
+                                    handleUserSuccess();
                                 }}
                                 onChange={(field, value) => {
                                     // Handle changes

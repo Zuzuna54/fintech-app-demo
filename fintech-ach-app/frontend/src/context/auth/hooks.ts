@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { UserRole, User } from '@/types/auth';
+import { shouldRefreshToken } from './utils';
 
 export function useRoleChecks(user: User | null): {
     checkRole: (allowedRoles: UserRole[]) => boolean;
@@ -23,8 +24,21 @@ export function useTokenRefreshInterval(token: string | null, refreshCallback: (
     return useCallback(() => {
         if (!token) return undefined;
 
+        const checkTokenExpiry = async (): Promise<void> => {
+            try {
+                if (shouldRefreshToken(token)) {
+                    await refreshCallback();
+                }
+            } catch (error) {
+                console.error("[AUTH] Token refresh check failed:", error);
+            }
+        };
+
+        // Initial check
+        void checkTokenExpiry();
+
         const interval = setInterval(() => {
-            void refreshCallback();
+            void checkTokenExpiry();
         }, 60000); // Check every minute
 
         return () => clearInterval(interval);
