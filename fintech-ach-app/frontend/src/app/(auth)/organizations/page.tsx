@@ -10,7 +10,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { UserRole } from '@/types/auth';
 import { OrganizationsTable } from './components/OrganizationsTable';
 import { OrganizationsHeader } from './components/OrganizationsHeader';
-import { OrganizationModal } from '../../../components/modals/OrganizationModal/OrganizationModal';
+import { OrganizationModal } from '@/components/modals/OrganizationModal/OrganizationModal';
 import type { Column, SortConfig } from '@/types/table';
 import { OrganizationForm } from './components/OrganizationForm';
 import type { Organization } from '@/types/api';

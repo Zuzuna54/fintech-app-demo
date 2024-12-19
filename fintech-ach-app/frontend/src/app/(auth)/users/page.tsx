@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
+// /* eslint-disable @typescript-eslint/no-misused-promises */
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUsers } from '@/hooks/useUsers';
 import { Account, User, Organization, Payment } from '@/types';
@@ -22,6 +22,20 @@ function UsersPage(): JSX.Element {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [errors, setErrors] = useState({
+        general: '',
+        email: '',
+        password: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        first_name: '',
+        last_name: '',
+        email: '',
+        role: '',
+        organization_id: '',
+        password: ''
+    });
     const [sortConfig, setSortConfig] = useState<SortConfig>({
         key: 'created_at',
         direction: 'desc'
@@ -48,7 +62,14 @@ function UsersPage(): JSX.Element {
 
     const handleUserSuccess = useCallback(async (): Promise<void> => {
         setShowForm(false);
-        setSelectedUser(null);
+        setFormData({
+            first_name: '',
+            last_name: '',
+            email: '',
+            role: '',
+            organization_id: '',
+            password: ''
+        });
         await mutate();
     }, [mutate]);
 
@@ -70,7 +91,48 @@ function UsersPage(): JSX.Element {
 
     const handleNewUser = useCallback((): void => {
         setShowForm(!showForm);
-    }, [showForm]);
+        setFormData({
+            first_name: '',
+            last_name: '',
+            email: '',
+            role: '',
+            organization_id: '',
+            password: ''
+        });
+    }, []);
+
+    const handleFormChange = (field: keyof typeof formData, value: string): void => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleFormSubmit = async (e: React.FormEvent): Promise<void> => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await api.post('/management/users', formData);
+            await handleUserSuccess();
+            setShowForm(false);
+        } catch (error) {
+            console.error('Error creating user:', error);
+            if (error.response?.status === 400 && error.response?.data?.detail?.includes('Email already registered')) {
+                setErrors(prev => ({
+                    ...prev,
+                    email: 'This email is already registered'
+                }));
+            } else {
+                // Handle other errors
+                setErrors(prev => ({
+                    ...prev,
+                    general: 'Failed to create user. Please try again.'
+                }));
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     if (error) {
         return <ErrorMessage message={error instanceof Error ? error.message : 'An error occurred'} />;
@@ -95,32 +157,12 @@ function UsersPage(): JSX.Element {
                         {showForm && (
                             <UserForm
                                 key="user-form"
-                                user={selectedUser ?? undefined}
-                                formData={{
-                                    first_name: selectedUser?.first_name ?? '',
-                                    last_name: selectedUser?.last_name ?? '',
-                                    email: selectedUser?.email ?? '',
-                                    role: selectedUser?.role ?? '',
-                                    organization_id: selectedUser?.organization_id ?? '',
-                                    password: ''
-                                }}
-                                isSubmitting={false}
-                                isDeleting={false}
-                                canEdit={true}
-                                canDelete={true}
-                                hasChanges={false}
-                                onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    await handleUserSuccess();
-                                }}
-                                onChange={() => {
-                                    // Handle changes
-                                }}
-                                onDelete={async () => {
-                                    if (selectedUser) {
-                                        await handleDeleteUser(selectedUser);
-                                    }
-                                }}
+                                formData={formData}
+                                isSubmitting={isSubmitting}
+                                onSubmit={handleFormSubmit}
+                                onChange={handleFormChange}
+                                errors={errors}
+                                setErrors={setErrors}
                             />
                         )}
                     </AnimatePresence>
