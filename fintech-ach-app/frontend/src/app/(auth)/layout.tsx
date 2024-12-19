@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SidebarNavigation } from '@/components/SidebarNavigation';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 import { UserRole } from '@/types/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { motion, AnimatePresence } from 'framer-motion';

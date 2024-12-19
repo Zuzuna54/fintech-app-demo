@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { UserRole } from '@/types/auth';
 

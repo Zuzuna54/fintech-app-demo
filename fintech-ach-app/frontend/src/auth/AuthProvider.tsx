@@ -9,13 +9,12 @@ import {
     getToken,
     getRefreshToken,
     removeTokens,
-    isTokenExpired,
-    shouldRefreshToken
-} from './utils';
-import { authReducer, initialState } from './reducer';
-import { useRoleChecks, useTokenRefreshInterval } from './hooks';
-import { fetchUserData, updateUserData, logoutUser } from './userService';
-import { loginUser, refreshUserToken } from './authService';
+    isTokenExpired
+} from '../lib/authUtils';
+import { authReducer, initialState } from '../reducers/authReducer';
+import { useRoleChecks, useTokenRefreshInterval } from '@/lib/authUtils';
+import { fetchUserData, updateUserData, logoutUser } from '@/hooks/userService';
+import { loginUser, refreshUserToken } from '@/hooks/authService';
 import { AxiosError } from 'axios';
 
 // Create context
@@ -63,36 +62,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
         };
     }, [cleanup]);
 
-    // Set up automatic token refresh with original logic
-    useEffect(() => {
-        const token = getToken();
-        if (!token) return;
+    // Set up automatic token refresh with orignal code
+    // useEffect(() => {
+    //     const token = getToken();
+    //     if (!token) return;
 
-        const checkTokenExpiry = async (): Promise<void> => {
-            try {
-                if (shouldRefreshToken(token)) {
-                    await refreshToken();
-                }
-            } catch (error) {
-                console.error("[AUTH] Token refresh check failed:", error);
-                // Don't logout on network errors or other temporary issues
-                if (error instanceof AxiosError && error.response?.status === 401) {
-                    dispatch({ type: 'AUTH_FAILURE', payload: 'Session expired' });
-                    removeTokens();
-                    router.push('/login');
-                }
-            }
-        };
+    //     const checkTokenExpiry = async (): Promise<void> => {
+    //         try {
+    //             if (shouldRefreshToken(token)) {
+    //                 await refreshToken();
+    //             }
+    //         } catch (error) {
+    //             console.error("[AUTH] Token refresh check failed:", error);
+    //             // Don't logout on network errors or other temporary issues
+    //             if (error instanceof AxiosError && error.response?.status === 401) {
+    //                 dispatch({ type: 'AUTH_FAILURE', payload: 'Session expired' });
+    //                 removeTokens();
+    //                 router.push('/login');
+    //             }
+    //         }
+    //     };
 
-        // Initial check
-        void checkTokenExpiry();
+    //     // Initial check
+    //     void checkTokenExpiry();
 
-        const interval = setInterval(() => {
-            void checkTokenExpiry();
-        }, 60000); // Check every minute
+    //     const interval = setInterval(() => {
+    //         void checkTokenExpiry();
+    //     }, 60000); // Check every minute
 
-        return () => clearInterval(interval);
-    }, [refreshToken, router]);
+    //     return () => clearInterval(interval);
+    // }, [refreshToken, router]);
 
     // Check authentication status on mount
     useEffect(() => {

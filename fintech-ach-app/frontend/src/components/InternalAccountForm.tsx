@@ -5,7 +5,7 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from './ui/Card';
 import { Save } from 'lucide-react';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 import { UserRole } from '@/types/auth';
 import { FormData, FormErrors, FormTouched } from '@/types/forms';
 import { Organization } from '@/types/api';

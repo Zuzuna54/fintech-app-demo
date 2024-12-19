@@ -6,7 +6,7 @@ import type { Column, SortConfig } from '@/types/table';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { AccountsResponse, PaymentsResponse } from '@/types';
 import { fetcher } from '@/lib/api';
-import { useAuth, withAuth } from '@/context/auth';
+import { useAuth, withAuth } from '@/auth';
 import { PaymentFilters } from '@/components/PaymentFilters';
 import { motion } from 'framer-motion';
 import { LoadingSpinner } from '@/components/LoadingSpinner';

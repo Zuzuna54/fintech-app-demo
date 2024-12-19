@@ -1,6 +1,6 @@
 import { api } from '@/lib/api';
 import { AuthResponse, isAuthResponse } from '@/types/auth';
-import { setTokens, getRefreshToken } from './utils';
+import { setTokens, getRefreshToken } from '../lib/authUtils';
 import { fetchUserData } from './userService';
 
 export async function loginUser(email: string, password: string): Promise<AuthResponse> {

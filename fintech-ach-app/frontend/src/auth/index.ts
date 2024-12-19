@@ -1,3 +1,3 @@
 export * from './AuthProvider';
-export * from './utils';
+export * from '@/lib/authUtils';
 export * from './withAuth'; 

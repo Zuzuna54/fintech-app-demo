@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 'use client';
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUsers } from '@/hooks/useUsers';
 import { Account, User, Organization, Payment } from '@/types';
-import { useAuth, withAuth } from '@/context/auth';
+import { useAuth, withAuth } from '@/auth';
 import { UserRole } from '@/types/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -28,11 +29,12 @@ function UsersPage(): JSX.Element {
     const pageSize = 10;
     const { user } = useAuth();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { data: usersData, isLoading, error, mutate } = useUsers({
         limit: pageSize,
         offset: (currentPage - 1) * pageSize,
         sortBy: sortConfig.key,
-        sortDirection: sortConfig.direction || undefined
+        sortDirection: sortConfig.direction ?? 'asc'
     });
 
     const handlePageChange = useCallback((page: number): void => {
@@ -44,15 +46,15 @@ function UsersPage(): JSX.Element {
         setCurrentPage(1);
     }, []);
 
-    const handleUserSuccess = useCallback((): void => {
+    const handleUserSuccess = useCallback(async (): Promise<void> => {
         setShowForm(false);
         setSelectedUser(null);
-        void mutate();
+        await mutate();
     }, [mutate]);
 
     const handleUserClick = useCallback((item: Account | Payment | Organization | User): void => {
         if ('email' in item && 'role' in item) {
-            setSelectedUser(item as User);
+            setSelectedUser(item);
             setIsModalOpen(true);
         }
     }, []);
@@ -109,9 +111,9 @@ function UsersPage(): JSX.Element {
                                 hasChanges={false}
                                 onSubmit={async (e) => {
                                     e.preventDefault();
-                                    handleUserSuccess();
+                                    await handleUserSuccess();
                                 }}
-                                onChange={(field, value) => {
+                                onChange={() => {
                                     // Handle changes
                                 }}
                                 onDelete={async () => {

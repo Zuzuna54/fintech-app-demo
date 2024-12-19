@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 import { UserRole } from '@/types/auth';
 import { Menu, X, LogOut } from 'lucide-react';
 import { useState } from 'react';

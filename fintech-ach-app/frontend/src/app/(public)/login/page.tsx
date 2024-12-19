@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/Card';

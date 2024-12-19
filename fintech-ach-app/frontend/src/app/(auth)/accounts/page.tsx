@@ -9,7 +9,7 @@ import { UserRole } from '@/types/auth';
 import type { AccountsResponse, Account } from '@/types';
 import { fetcher } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { useAuth, withAuth } from '@/context/auth';
+import { useAuth, withAuth } from '@/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { AccountModal } from '@/components/modals/AccountModal';
