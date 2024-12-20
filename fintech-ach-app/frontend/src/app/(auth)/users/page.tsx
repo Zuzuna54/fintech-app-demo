@@ -224,9 +224,10 @@ function UsersPage(): ReactElement {
                             setIsModalOpen(false);
                             setSelectedUser(null);
                         }}
-                        onDelete={async (user) => {
-                            await handleDeleteUser(user);
-                            await mutate();
+                        onDelete={(user) => {
+                            void handleDeleteUser(user).then(() => {
+                                void mutate();
+                            });
                         }}
                         onSuccess={async () => {
                             await mutate();
