@@ -1,7 +1,6 @@
 'use client';
 
 import React, { type ReactElement, useState, useCallback } from 'react';
-import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAuth, withAuth } from '@/auth';
@@ -14,7 +13,7 @@ import { OrganizationModal } from '@/components/modals/OrganizationModal/Organiz
 import type { Column, SortConfig } from '@/types/table';
 import { OrganizationForm } from './components/OrganizationForm';
 import type { Organization } from '@/types/api';
-import { api, fetcher } from '@/lib/api';
+import { useOrganizations, useCreateOrganization, useDeleteOrganization } from '@/hooks/api/useOrganizations';
 
 const columns: Column<Organization>[] = [
     { header: 'Name', accessor: 'name', type: 'text', sortable: true },
@@ -36,45 +35,30 @@ function OrganizationsPage(): ReactElement {
     const pageSize = 10;
     const { user } = useAuth();
 
-    const queryParams = new URLSearchParams();
-    queryParams.append('limit', pageSize.toString());
-    queryParams.append('offset', ((currentPage - 1) * pageSize).toString());
-    queryParams.append('sort_by', String(sortConfig.key));
-    queryParams.append('sort_direction', sortConfig.direction?.toString() ?? '');
+    const { data: organizationsData, error: organizationsError, isLoading, mutate: refreshOrganizations } = useOrganizations({
+        limit: pageSize,
+        offset: (currentPage - 1) * pageSize,
+        sortBy: sortConfig.key,
+        sortDirection: sortConfig.direction as 'asc' | 'desc'
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { data, error: organizationsError, mutate: mutateOrganizations } = useSWR<{
-        organizations: Organization[];
-        total: number;
-    }, Error>(
-        `/management/organizations?${queryParams.toString()}`,
-        fetcher,
-        {
-            keepPreviousData: true,
-            revalidateOnFocus: false
-        }
-    );
-
-    const organizations = data?.organizations ?? [];
+    const { mutate: createOrganization, isLoading: isSubmitting } = useCreateOrganization();
+    const { mutate: deleteOrganization } = useDeleteOrganization();
 
     const handlePageChange = useCallback((page: number): void => {
         setCurrentPage(page);
-        void mutateOrganizations();
-    }, [mutateOrganizations]);
+    }, []);
 
     const handleSort = useCallback((newSortConfig: SortConfig): void => {
-        if (newSortConfig.key !== sortConfig.key) {
-            setCurrentPage(1);
-        }
         setSortConfig(newSortConfig);
-        void mutateOrganizations();
-    }, [mutateOrganizations, sortConfig]);
+        setCurrentPage(1);
+    }, []);
 
     const handleOrganizationSuccess = useCallback((): void => {
         setShowForm(false);
         setSelectedOrganization(null);
-        void mutateOrganizations();
-    }, [mutateOrganizations]);
+        void refreshOrganizations();
+    }, [refreshOrganizations]);
 
     const handleOrganizationClick = useCallback((organization: Organization): void => {
         setSelectedOrganization(organization);
@@ -82,9 +66,10 @@ function OrganizationsPage(): ReactElement {
     }, []);
 
     const handleDeleteOrganization = useCallback(async (organization: Organization): Promise<void> => {
+        if (!organization.id) return;
         try {
-            await api.delete(`/management/organizations/${organization.id}`);
-            void mutateOrganizations();
+            await deleteOrganization({ organizationId: organization.id });
+            void refreshOrganizations();
         } catch (error) {
             if (error instanceof Error && error.message.includes('foreign key constraint')) {
                 alert('Cannot delete organization because it has associated bank accounts. Please remove all bank accounts first.');
@@ -93,14 +78,14 @@ function OrganizationsPage(): ReactElement {
                 alert('Failed to delete organization. Please try again.');
             }
         }
-    }, [mutateOrganizations]);
+    }, [deleteOrganization, refreshOrganizations]);
 
     const handleNewOrganization = useCallback((): void => {
         setShowForm(!showForm);
     }, [showForm]);
 
     if (organizationsError) {
-        return <ErrorMessage message={organizationsError.message} />;
+        return <ErrorMessage message={organizationsError instanceof Error ? organizationsError.message : 'An error occurred'} />;
     }
 
     return (
@@ -124,12 +109,17 @@ function OrganizationsPage(): ReactElement {
                                 key="organization-form"
                                 organization={selectedOrganization ?? undefined}
                                 onSuccess={handleOrganizationSuccess}
+                                isSubmitting={isSubmitting}
+                                onSubmit={async (formData) => {
+                                    await createOrganization(formData);
+                                    handleOrganizationSuccess();
+                                }}
                             />
                         )}
                     </AnimatePresence>
 
                     <AnimatePresence mode="wait">
-                        {!data ? (
+                        {isLoading || !organizationsData ? (
                             <motion.div
                                 key="loading"
                                 initial={{ opacity: 0 }}
@@ -149,8 +139,8 @@ function OrganizationsPage(): ReactElement {
                                 transition={{ duration: 0.3 }}
                             >
                                 <OrganizationsTable
-                                    data={organizations}
-                                    total={data.total}
+                                    data={organizationsData.organizations}
+                                    total={organizationsData.total}
                                     columns={columns}
                                     currentPage={currentPage}
                                     pageSize={pageSize}
@@ -171,7 +161,7 @@ function OrganizationsPage(): ReactElement {
                             setSelectedOrganization(null);
                         }}
                         onDelete={(org) => void handleDeleteOrganization(org)}
-                        onSuccess={() => void mutateOrganizations()}
+                        onSuccess={() => void refreshOrganizations()}
                         userRole={user?.role}
                     />
                 </main>

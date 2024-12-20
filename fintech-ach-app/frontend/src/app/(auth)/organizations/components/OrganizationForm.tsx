@@ -3,12 +3,13 @@ import { motion } from 'framer-motion';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { api } from '@/lib/api';
-import type { Organization } from '@/types/api';
+import type { Organization, CreateOrganizationDto } from '@/types/api';
 
 interface OrganizationFormProps {
     organization?: Organization;
     onSuccess: () => void;
+    isSubmitting: boolean;
+    onSubmit: (data: CreateOrganizationDto) => Promise<void>;
 }
 
 interface FormErrors {
@@ -16,13 +17,17 @@ interface FormErrors {
     description?: string;
 }
 
-export function OrganizationForm({ organization, onSuccess }: OrganizationFormProps): ReactElement {
-    const [formData, setFormData] = useState({
+export function OrganizationForm({
+    organization,
+    onSuccess,
+    isSubmitting,
+    onSubmit
+}: OrganizationFormProps): ReactElement {
+    const [formData, setFormData] = useState<CreateOrganizationDto>({
         name: organization?.name ?? '',
         description: organization?.description ?? ''
     });
     const [errors, setErrors] = useState<FormErrors>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const validateForm = (): boolean => {
         const newErrors: FormErrors = {};
@@ -46,36 +51,11 @@ export function OrganizationForm({ organization, onSuccess }: OrganizationFormPr
             return;
         }
 
-        setIsSubmitting(true);
-
         try {
-            if (organization) {
-                await api.put(`/management/organizations/${organization.id}`, formData);
-            } else {
-                await api.post('/management/organizations', formData);
-            }
+            await onSubmit(formData);
             onSuccess();
         } catch (error) {
             console.error('Error submitting organization:', error);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleDelete = async (): Promise<void> => {
-        if (!organization || !window.confirm('Are you sure you want to delete this organization?')) {
-            return;
-        }
-
-        setIsSubmitting(true);
-
-        try {
-            await api.delete(`/management/organizations/${organization.id}`);
-            onSuccess();
-        } catch (error) {
-            console.error('Error deleting organization:', error);
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
@@ -113,16 +93,6 @@ export function OrganizationForm({ organization, onSuccess }: OrganizationFormPr
                         />
 
                         <div className="flex justify-end space-x-2">
-                            {organization && (
-                                <Button
-                                    type="button"
-                                    variant="destructive"
-                                    onClick={() => void handleDelete()}
-                                    disabled={isSubmitting}
-                                >
-                                    Delete
-                                </Button>
-                            )}
                             <Button
                                 type="submit"
                                 isLoading={isSubmitting}
