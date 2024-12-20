@@ -3,7 +3,7 @@ import { api } from '@/lib/api';
 import { AxiosError } from 'axios';
 
 export interface MutationOptions<T, R> {
-    url: string;
+    url: string | ((data: T) => string);
     method: 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     onSuccess?: (data: R) => void;
     onError?: (error: Error) => void;
@@ -35,9 +35,9 @@ export function createMutation<T, R>({
     const mutate = async (data: T): Promise<R | null> => {
         setIsLoading(true);
         setError(null);
-
         try {
-            const response = await api[method.toLowerCase()](url, data);
+            const finalUrl = typeof url === 'function' ? url(data) : url;
+            const response = await (api as any)[method.toLowerCase()](finalUrl, method === 'DELETE' ? undefined : data);
             const result = transform ? transform(response.data) : response.data;
             onSuccess?.(result);
             return result;

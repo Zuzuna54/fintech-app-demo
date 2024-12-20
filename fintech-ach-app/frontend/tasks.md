@@ -4,7 +4,7 @@
 
 1. **SWR Hooks**:
 
-   - `useUsers` - Fetches user data with pagination and sorting
+   - ✅ `useUsers` - Standardized with new query and mutation hooks
    - `useOrganizations` - Fetches organization data
    - Custom SWR implementations in various components
 
@@ -17,35 +17,31 @@
    - Token-based auth with refresh mechanism
    - Auth state management through context
 
-## Issues in Current Implementation
-
-1. Inconsistent error handling
-2. Mixed usage of direct API calls and SWR
-3. Duplicate pagination/sorting logic
-4. Inconsistent caching strategies
-5. No standardized loading states
-
 ## Implementation Progress
 
 ### ✅ Completed Steps
 
 1. Created new branch `feature/data-fetching-standardization`
 2. Created base hooks in `/hooks/api/` directory:
-   - `useQuery.ts` - Type-safe query hook factory with SWR
-   - `useMutation.ts` - Type-safe mutation hook factory
-   - `index.ts` - Exports for the API hooks
+   - ✅ `useQuery.ts` - Type-safe query hook factory with SWR
+   - ✅ `useMutation.ts` - Type-safe mutation hook factory with proper error handling
+   - ✅ `index.ts` - Exports for the API hooks
 3. Created comprehensive type definitions for API responses:
    - ✅ Base response types and error types
    - ✅ User response types
    - ✅ Organization response types
    - ✅ Account response types
    - ✅ Payment response types
+4. Updated components with new hooks:
+   - ✅ Users page and related components
+   - [ ] Organizations page and related components
+   - [ ] Accounts page and related components
+   - [ ] Payments page and related components
 
 ### 🚧 Remaining Steps
 
-1. Update components with new hooks:
+1. Continue updating components with new hooks:
 
-   - [ ] Users page and related components
    - [ ] Organizations page and related components
    - [ ] Accounts page and related components
    - [ ] Payments page and related components
@@ -70,34 +66,38 @@
 
 ## Components Requiring Updates
 
-1. `/app/(auth)/users/page.tsx`
-2. `/app/(auth)/organizations/page.tsx`
-3. `/app/(auth)/accounts/page.tsx`
-4. `/app/(auth)/payments/page.tsx`
-5. `/components/modals/UserModal/UserModal.tsx`
-6. `/components/modals/OrganizationModal/OrganizationModal.tsx`
-7. `/components/modals/AccountModal/AccountModal.tsx`
-8. `/hooks/useUsers.ts`
-9. `/hooks/useOrganizations.ts`
-10. `/hooks/useAccounts.ts`
-11. `/hooks/usePayments.ts`
+1. ✅ `/app/(auth)/users/page.tsx`
+2. [ ] `/app/(auth)/organizations/page.tsx`
+3. [ ] `/app/(auth)/accounts/page.tsx`
+4. [ ] `/app/(auth)/payments/page.tsx`
+5. ✅ `/components/modals/UserModal/UserModal.tsx`
+6. [ ] `/components/modals/OrganizationModal/OrganizationModal.tsx`
+7. [ ] `/components/modals/AccountModal/AccountModal.tsx`
+8. ✅ `/hooks/useUsers.ts` -> `/hooks/api/useUsers.ts`
+9. [ ] `/hooks/useOrganizations.ts`
+10. [ ] `/hooks/useAccounts.ts`
+11. [ ] `/hooks/usePayments.ts`
 
 ## Migration Strategy
 
-1. Implement new hooks alongside existing ones
-2. Gradually migrate components to new system
-3. Test thoroughly after each component migration
+1. ✅ Implement new hooks alongside existing ones
+2. ✅ Gradually migrate components to new system
+3. ✅ Test thoroughly after each component migration
 4. Remove old implementation once all components are migrated
 5. Update tests and documentation
 
 ## Next Steps
 
-1. Create type definitions for API responses
-2. Start with Users page migration:
-   - Update `useUsers` hook
-   - Update Users page
-   - Update UserModal
-   - Test changes
-3. Continue with Organizations page
+1. ✅ Create type definitions for API responses
+2. ✅ Start with Users page migration:
+   - ✅ Update `useUsers` hook
+   - ✅ Update Users page
+   - ✅ Update UserModal
+   - ✅ Test changes
+3. Continue with Organizations page:
+   - [ ] Create `useOrganizations` hook with new pattern
+   - [ ] Update Organizations page
+   - [ ] Update OrganizationModal
+   - [ ] Test changes
 4. Move on to Accounts and Payments
 5. Final testing and documentation

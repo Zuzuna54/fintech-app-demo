@@ -67,8 +67,8 @@
 - [x] Redis-based queue
 - [x] Async processing
 - [x] Queue monitoring endpoints
-- [ ] Retry mechanism
-- [ ] Dead letter queue
+- [x] Retry mechanism
+- [x] Dead letter queue
 
 ## Error Handling & Logging
 
@@ -117,7 +117,6 @@
    - [ ] API documentation
    - [ ] Error tracking
    - [ ] Rate limiting
-
 
 ## Architecture
 

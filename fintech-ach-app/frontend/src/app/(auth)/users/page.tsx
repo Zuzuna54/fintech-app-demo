@@ -1,10 +1,9 @@
-// /* eslint-disable @typescript-eslint/no-misused-promises */
 'use client';
 
 import React, { type ReactElement, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUsers } from '@/hooks/useUsers';
-import { Account, User, Organization, Payment } from '@/types';
+import { useUsers, useCreateUser, useDeleteUser } from '@/hooks/api/useUsers';
+import type { User, Organization, Account, Payment } from '@/types/api';
 import { useAuth, withAuth } from '@/auth';
 import { UserRole } from '@/types/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -14,7 +13,6 @@ import { UsersHeader } from './components/UsersHeader';
 import { UsersTable } from './components/UsersTable';
 import { UserModal } from '@/components/modals/UserModal/UserModal';
 import { UserForm } from './components/UserForm';
-import { api } from '@/lib/api';
 import type { SortConfig } from '@/types/table';
 
 function UsersPage(): ReactElement {
@@ -27,7 +25,6 @@ function UsersPage(): ReactElement {
         email: '',
         password: ''
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -43,13 +40,15 @@ function UsersPage(): ReactElement {
     const pageSize = 10;
     const { user } = useAuth();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { data: usersData, isLoading, error, mutate } = useUsers({
+    const { data: usersData, error: usersError, isLoading, mutate: refreshUsers } = useUsers({
         limit: pageSize,
         offset: (currentPage - 1) * pageSize,
         sortBy: sortConfig.key,
-        sortDirection: sortConfig.direction ?? 'asc'
+        sortDirection: sortConfig.direction as 'asc' | 'desc'
     });
+
+    const { mutate: createUser, isLoading: isSubmitting } = useCreateUser();
+    const { mutate: deleteUser } = useDeleteUser();
 
     const handlePageChange = useCallback((page: number): void => {
         setCurrentPage(page);
@@ -60,7 +59,7 @@ function UsersPage(): ReactElement {
         setCurrentPage(1);
     }, []);
 
-    const handleUserSuccess = useCallback(async (): Promise<void> => {
+    const handleUserSuccess = useCallback((): void => {
         setShowForm(false);
         setFormData({
             first_name: '',
@@ -70,8 +69,8 @@ function UsersPage(): ReactElement {
             organization_id: '',
             password: ''
         });
-        await mutate();
-    }, [mutate]);
+        void refreshUsers();
+    }, [refreshUsers]);
 
     const handleUserClick = useCallback((item: Account | Payment | Organization | User): void => {
         if ('email' in item && 'role' in item) {
@@ -79,27 +78,6 @@ function UsersPage(): ReactElement {
             setIsModalOpen(true);
         }
     }, []);
-
-    const handleDeleteUser = useCallback(async (user: User): Promise<void> => {
-        try {
-            await api.delete(`/management/users/${user.id}`);
-            void mutate();
-        } catch (error) {
-            console.error('Error deleting user:', error);
-        }
-    }, [mutate]);
-
-    const handleNewUser = useCallback((): void => {
-        setShowForm(!showForm);
-        setFormData({
-            first_name: '',
-            last_name: '',
-            email: '',
-            role: '',
-            organization_id: '',
-            password: ''
-        });
-    }, [showForm]);
 
     const handleFormChange = (field: keyof typeof formData, value: string): void => {
         setFormData(prev => ({
@@ -110,37 +88,39 @@ function UsersPage(): ReactElement {
 
     const handleFormSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
-        setIsSubmitting(true);
         try {
-            await api.post('/management/users', formData);
-            await handleUserSuccess();
+            await createUser(formData);
+            handleUserSuccess();
             setShowForm(false);
         } catch (error: unknown) {
-            console.error('Error creating user:', error);
-            if (error && typeof error === 'object' && 'response' in error) {
-                const response = error.response as { status?: number; data?: { detail?: string } };
-                if (response?.status === 400 &&
-                    typeof response?.data?.detail === 'string' &&
-                    response.data.detail.includes('Email already registered')) {
+            if (error instanceof Error) {
+                if (error.message.includes('Email already registered')) {
                     setErrors(prev => ({
                         ...prev,
                         email: 'This email is already registered'
                     }));
                 } else {
-                    // Handle other errors
                     setErrors(prev => ({
                         ...prev,
                         general: 'Failed to create user. Please try again.'
                     }));
                 }
             }
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
-    if (error) {
-        return <ErrorMessage message={error instanceof Error ? error.message : 'An error occurred'} />;
+    const handleDeleteUser = useCallback(async (user: User): Promise<void> => {
+        if (!user.id) return;
+        try {
+            await deleteUser({ userId: user.id });
+            void refreshUsers();
+        } catch (error) {
+            console.error('Failed to delete user:', error);
+        }
+    }, [deleteUser, refreshUsers]);
+
+    if (usersError) {
+        return <ErrorMessage message={usersError instanceof Error ? usersError.message : 'An error occurred'} />;
     }
 
     return (
@@ -155,7 +135,7 @@ function UsersPage(): ReactElement {
                     <UsersHeader
                         showForm={showForm}
                         userRole={user?.role}
-                        onToggleForm={handleNewUser}
+                        onToggleForm={() => setShowForm(!showForm)}
                     />
 
                     <AnimatePresence>
@@ -226,11 +206,11 @@ function UsersPage(): ReactElement {
                         }}
                         onDelete={(user) => {
                             void handleDeleteUser(user).then(() => {
-                                void mutate();
+                                void refreshUsers();
                             });
                         }}
                         onSuccess={async () => {
-                            await mutate();
+                            await refreshUsers();
                         }}
                         userRole={user?.role}
                     />

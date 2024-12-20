@@ -66,7 +66,7 @@ export function UserModal({
                 last_name: user.last_name ?? '',
                 email: user.email,
                 role: user.role,
-                organization_id: user.organization_id ?? ''
+                organization_id: user.organization?.id ?? user.organization_id ?? ''
             });
             setHasChanges(false);
         }
