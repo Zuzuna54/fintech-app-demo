@@ -24,7 +24,6 @@ export function useUserModal({
     const [formData, setFormData] = useState<UserFormData>({
         first_name: user?.first_name ?? '',
         last_name: user?.last_name ?? '',
-        name: user?.name ?? '',
         email: user?.email ?? '',
         role: user?.role ?? '',
         organization_id: user?.organization?.uuid ?? '',
@@ -33,7 +32,6 @@ export function useUserModal({
     const [initialData, setInitialData] = useState<UserFormData>({
         first_name: '',
         last_name: '',
-        name: '',
         email: '',
         role: '',
         organization_id: '',
@@ -50,7 +48,6 @@ export function useUserModal({
             const data: UserFormData = {
                 first_name: user.first_name ?? '',
                 last_name: user.last_name ?? '',
-                name: user.name,
                 email: user.email,
                 role: user.role,
                 organization_id: user.organization?.uuid,
@@ -63,7 +60,6 @@ export function useUserModal({
             const emptyData: UserFormData = {
                 first_name: '',
                 last_name: '',
-                name: '',
                 email: '',
                 role: '',
                 organization_id: '',
@@ -80,7 +76,8 @@ export function useUserModal({
 
     const checkForChanges = (data: UserFormData): boolean => {
         return (
-            data.name !== initialData.name ||
+            data.first_name !== initialData.first_name ||
+            data.last_name !== initialData.last_name ||
             data.email !== initialData.email ||
             data.role !== initialData.role ||
             data.organization_id !== initialData.organization_id
@@ -119,12 +116,26 @@ export function useUserModal({
             }
             onSuccess();
             onClose();
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('User operation error:', error);
-            if (error.response?.status === 400 && error.response?.data?.detail?.includes('Email already registered')) {
+            if (
+                typeof error === 'object' &&
+                error !== null &&
+                'response' in error &&
+                typeof error.response === 'object' &&
+                error.response !== null &&
+                'status' in error.response &&
+                error.response.status === 400 &&
+                'data' in error.response &&
+                typeof error.response.data === 'object' &&
+                error.response.data !== null &&
+                'detail' in error.response.data &&
+                typeof error.response.data.detail === 'string' &&
+                error.response.data.detail.includes('Email already registered')
+            ) {
                 onError(new Error('This email is already registered'));
             } else {
-                onError(error as Error);
+                onError(error instanceof Error ? error : new Error('An unknown error occurred'));
             }
         } finally {
             setIsSubmitting(false);

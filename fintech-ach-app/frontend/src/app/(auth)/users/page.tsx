@@ -1,7 +1,7 @@
 // /* eslint-disable @typescript-eslint/no-misused-promises */
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUsers } from '@/hooks/useUsers';
 import { Account, User, Organization, Payment } from '@/types';
@@ -99,7 +99,7 @@ function UsersPage(): JSX.Element {
             organization_id: '',
             password: ''
         });
-    }, []);
+    }, [showForm]);
 
     const handleFormChange = (field: keyof typeof formData, value: string): void => {
         setFormData(prev => ({
@@ -115,19 +115,24 @@ function UsersPage(): JSX.Element {
             await api.post('/management/users', formData);
             await handleUserSuccess();
             setShowForm(false);
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Error creating user:', error);
-            if (error.response?.status === 400 && error.response?.data?.detail?.includes('Email already registered')) {
-                setErrors(prev => ({
-                    ...prev,
-                    email: 'This email is already registered'
-                }));
-            } else {
-                // Handle other errors
-                setErrors(prev => ({
-                    ...prev,
-                    general: 'Failed to create user. Please try again.'
-                }));
+            if (error && typeof error === 'object' && 'response' in error) {
+                const response = error.response as { status?: number; data?: { detail?: string } };
+                if (response?.status === 400 &&
+                    typeof response?.data?.detail === 'string' &&
+                    response.data.detail.includes('Email already registered')) {
+                    setErrors(prev => ({
+                        ...prev,
+                        email: 'This email is already registered'
+                    }));
+                } else {
+                    // Handle other errors
+                    setErrors(prev => ({
+                        ...prev,
+                        general: 'Failed to create user. Please try again.'
+                    }));
+                }
             }
         } finally {
             setIsSubmitting(false);
@@ -161,8 +166,16 @@ function UsersPage(): JSX.Element {
                                 isSubmitting={isSubmitting}
                                 onSubmit={handleFormSubmit}
                                 onChange={handleFormChange}
-                                errors={errors}
-                                setErrors={setErrors}
+                                errors={{
+                                    general: errors.general ?? '',
+                                    email: errors.email ?? '',
+                                    password: errors.password ?? ''
+                                }}
+                                setErrors={(newErrors) => setErrors({
+                                    general: newErrors.general ?? '',
+                                    email: newErrors.email ?? '',
+                                    password: newErrors.password ?? ''
+                                })}
                             />
                         )}
                     </AnimatePresence>

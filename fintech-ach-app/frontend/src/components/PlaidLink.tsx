@@ -100,7 +100,7 @@ export function PlaidLink({ organizationId, onSuccess, onError, children }: Plai
         token: linkToken,
         receivedRedirectUri: undefined,
         env: (process.env.NEXT_PUBLIC_PLAID_ENV as 'sandbox' | 'development' | 'production') ?? 'sandbox',
-        onSuccess: (public_token, metadata) => {
+        onSuccess: (public_token) => {
             void onPlaidSuccess(public_token,
                 // metadata
             );
