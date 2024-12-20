@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InternalAccountForm } from '@/components/InternalAccountForm';
 import { AccountsTable } from './AccountsTable';
@@ -34,7 +34,7 @@ export function InternalAccountsTab({
     onAccountClick,
     onSort,
     onPageChange
-}: InternalAccountsTabProps): JSX.Element {
+}: InternalAccountsTabProps): ReactElement {
     return (
         <motion.div
             initial={{ opacity: 0, y: -20 }}

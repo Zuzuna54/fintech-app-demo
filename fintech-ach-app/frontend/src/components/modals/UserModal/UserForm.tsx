@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactElement } from 'react';
 // import { motion } from 'framer-motion';
 // import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -53,7 +53,7 @@ export function UserForm({
     onSubmit,
     // onChange, 
     onDelete
-}: UserFormProps): JSX.Element {
+}: UserFormProps): ReactElement {
     const [formData, setFormData] = useState<FormData>({
         first_name: user?.first_name ?? '',
         last_name: user?.last_name ?? '',

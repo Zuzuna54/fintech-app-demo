@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { PaymentFormProps } from '@/types/forms';
 import { usePaymentForm } from './usePaymentForm';
 import { PaymentTypeSelector } from './PaymentTypeSelector';
@@ -11,7 +11,7 @@ import { Send } from 'lucide-react';
 import { BankAccountType } from '@/types/accounts';
 import { PaymentType } from '@/types/payments';
 
-export function PaymentForm({ accounts, onSuccess, onError }: PaymentFormProps): JSX.Element {
+export function PaymentForm({ accounts, onSuccess, onError }: PaymentFormProps): ReactElement {
     const {
         formState,
         isSubmitting,

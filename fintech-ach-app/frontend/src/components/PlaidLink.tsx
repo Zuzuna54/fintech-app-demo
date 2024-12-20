@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { type ReactElement, useCallback, useEffect, useState, useRef } from 'react';
 import {
     usePlaidLink, PlaidLinkOptions,
     // PlaidLinkOnSuccessMetadata 
@@ -25,7 +25,7 @@ interface ExchangeTokenResponse {
     account_ids: string[];
 }
 
-export function PlaidLink({ organizationId, onSuccess, onError, children }: PlaidLinkProps): JSX.Element {
+export function PlaidLink({ organizationId, onSuccess, onError, children }: PlaidLinkProps): ReactElement {
     const [isLinking, setIsLinking] = useState(false);
     const [linkToken, setLinkToken] = useState<string | null>(null);
     const [shouldReinitialize, setShouldReinitialize] = useState(false);

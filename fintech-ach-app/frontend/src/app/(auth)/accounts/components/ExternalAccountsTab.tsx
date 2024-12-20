@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { motion } from 'framer-motion';
 import { AccountsTable } from './AccountsTable';
 import { EmptyAccountState } from './EmptyAccountState';
@@ -31,7 +31,7 @@ export function ExternalAccountsTab({
     onAccountClick,
     onSort,
     onPageChange
-}: ExternalAccountsTabProps): JSX.Element {
+}: ExternalAccountsTabProps): ReactElement {
     return (
         <motion.div
             initial={{ opacity: 0, y: -20 }}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Button } from '@/components/ui/Button';
 
 interface PaymentTypeSelectorProps {
@@ -7,7 +7,7 @@ interface PaymentTypeSelectorProps {
     disabled?: boolean;
 }
 
-export function PaymentTypeSelector({ value, onChange, disabled }: PaymentTypeSelectorProps): JSX.Element {
+export function PaymentTypeSelector({ value, onChange, disabled }: PaymentTypeSelectorProps): ReactElement {
     return (
         <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { motion } from 'framer-motion';
 
 interface EmptyAccountStateProps {
@@ -6,7 +6,7 @@ interface EmptyAccountStateProps {
     message: string;
 }
 
-export function EmptyAccountState({ title, message }: EmptyAccountStateProps): JSX.Element {
+export function EmptyAccountState({ title, message }: EmptyAccountStateProps): ReactElement {
     return (
         <motion.div
             initial={{ opacity: 0 }}

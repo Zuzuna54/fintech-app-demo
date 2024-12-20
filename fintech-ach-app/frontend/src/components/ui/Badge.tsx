@@ -1,3 +1,4 @@
+import React, { type ReactElement } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -26,7 +27,7 @@ export function Badge({
     className,
     variant = 'default',
     ...props
-}: BadgeProps): JSX.Element {
+}: BadgeProps): ReactElement {
     return (
         <span
             className={cn(

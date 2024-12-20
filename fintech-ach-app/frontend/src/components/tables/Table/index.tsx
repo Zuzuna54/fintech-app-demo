@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Column, SortConfig, TableItem } from '@/types/table';
 import { Payment, PaymentsData } from '@/types/payments';
 import { Account, AccountsData } from '@/types/accounts';
@@ -30,7 +30,7 @@ export function Table({
     onRowClick,
     sortConfig,
     onSort
-}: TableProps): JSX.Element {
+}: TableProps): ReactElement {
     const items = type === 'organizations'
         ? (data as OrganizationsData).organizations
         : type === 'payments'

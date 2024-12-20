@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Badge, getStatusBadgeVariant } from '@/components/ui/Badge';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
 import { AccountModalProps } from '../../../types/modal';
@@ -13,7 +13,7 @@ export function AccountModal({
     onClose,
     onSuccess,
     onError
-}: AccountModalProps): JSX.Element | null {
+}: AccountModalProps): ReactElement | null {
     const {
         formData,
         isSubmitting,

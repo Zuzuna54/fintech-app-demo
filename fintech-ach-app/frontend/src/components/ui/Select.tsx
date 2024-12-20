@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { cn } from '@/lib/utils';
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
     className?: string;
 }
 
-export function Select({ className, children, ...props }: SelectProps): JSX.Element {
+export function Select({ className, children, ...props }: SelectProps): ReactElement {
     return (
         <select
             className={cn(

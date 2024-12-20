@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Input } from './Input';
 
 interface AmountInputProps {
@@ -15,7 +15,7 @@ export function AmountInput({
     onChange,
     disabled,
     error
-}: AmountInputProps): JSX.Element {
+}: AmountInputProps): ReactElement {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const newValue = e.target.value;
         // Only allow numbers and decimals

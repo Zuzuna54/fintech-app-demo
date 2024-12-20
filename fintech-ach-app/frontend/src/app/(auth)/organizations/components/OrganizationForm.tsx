@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { type ReactElement, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -16,7 +16,7 @@ interface FormErrors {
     description?: string;
 }
 
-export function OrganizationForm({ organization, onSuccess }: OrganizationFormProps): JSX.Element {
+export function OrganizationForm({ organization, onSuccess }: OrganizationFormProps): ReactElement {
     const [formData, setFormData] = useState({
         name: organization?.name ?? '',
         description: organization?.description ?? ''

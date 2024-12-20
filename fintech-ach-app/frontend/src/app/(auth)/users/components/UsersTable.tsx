@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Table } from '@/components/tables/Table';
 import { AnimatedTableContainer } from '@/components/tables/Table/AnimatedTableContainer';
 import { User, Organization, Account, Payment } from '@/types';
@@ -35,7 +35,7 @@ export function UsersTable({
     sortConfig,
     onSort,
     onPageChange
-}: UsersTableProps): JSX.Element {
+}: UsersTableProps): ReactElement {
     const { user: currentUser } = useAuth();
     const canManageUsers = currentUser?.role === UserRole.SUPERUSER;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { type ReactElement, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Home, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -19,7 +19,7 @@ interface ErrorPageProps {
 export default function PaymentsError({
     error,
     reset
-}: ErrorPageProps): JSX.Element {
+}: ErrorPageProps): ReactElement {
     const router = useRouter();
 
     useEffect(() => {

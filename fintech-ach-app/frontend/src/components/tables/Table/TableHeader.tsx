@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Column, SortConfig, TableItem } from '@/types/table';
 
@@ -8,7 +8,7 @@ interface TableHeaderProps {
     onSort?: (column: Column<TableItem>) => void;
 }
 
-export function TableHeader({ columns, sortConfig, onSort }: TableHeaderProps): JSX.Element {
+export function TableHeader({ columns, sortConfig, onSort }: TableHeaderProps): ReactElement {
     const handleSort = (column: Column<TableItem>): void => {
         if (!column.sortable || !onSort) return;
         onSort(column);

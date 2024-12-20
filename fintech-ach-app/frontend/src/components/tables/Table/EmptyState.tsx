@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { EmptyStateProps } from '@/types/table';
 
-export function EmptyState({ columns, type, total }: EmptyStateProps): JSX.Element {
+export function EmptyState({ columns, type, total }: EmptyStateProps): ReactElement {
     return (
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="overflow-x-auto">

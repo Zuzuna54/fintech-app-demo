@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Table } from '@/components/tables/Table';
 import { AnimatedTableContainer } from '@/components/tables/Table/AnimatedTableContainer';
 import type { Column, SortConfig } from '@/types/table';
@@ -30,7 +30,7 @@ export function AccountsTable({
     onRowClick,
     onSort,
     onPageChange
-}: AccountsTableProps): JSX.Element {
+}: AccountsTableProps): ReactElement {
     return (
         <AnimatedTableContainer
             currentPage={currentPage}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { type ReactElement, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -42,7 +42,7 @@ export function UserForm({
     onChange,
     errors,
     setErrors
-}: UserFormProps): JSX.Element {
+}: UserFormProps): ReactElement {
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(false);
     const [organizationsError, setOrganizationsError] = useState<string | null>(null);

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Badge, getStatusBadgeVariant } from '@/components/ui/Badge';
@@ -16,7 +16,7 @@ interface TableBodyProps {
 
 const hasId = (item: TableItem): item is TableItem & { id: string | number } => 'id' in item;
 const hasUuid = (item: TableItem): item is TableItem & { uuid: string } => 'uuid' in item;
-export function TableBody({ columns, items, onRowClick }: TableBodyProps): JSX.Element {
+export function TableBody({ columns, items, onRowClick }: TableBodyProps): ReactElement {
     const renderCellValue = (item: TableItem, column: Column<TableItem>): React.ReactNode => {
         if (column.cell) {
             return column.cell({ getValue: () => item[column.accessor], row: { original: item } });

@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/auth';
 
-export default function UnauthorizedPage(): JSX.Element {
+export default function UnauthorizedPage(): ReactElement {
     const router = useRouter();
     const { user } = useAuth();
 

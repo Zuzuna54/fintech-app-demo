@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
 import { UserModalProps } from '@/types/modal';
 import { useUserModal } from './useUserModal';
@@ -19,7 +19,7 @@ export function UserModal({
     onClose,
     onSuccess,
     onError
-}: LocalUserModalProps): JSX.Element | null {
+}: LocalUserModalProps): ReactElement | null {
     const {
         // formData,
         isSubmitting,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Tab } from '@headlessui/react';
 
 interface AccountsTabsProps {
@@ -15,7 +15,7 @@ export function AccountsTabs({
     onChange,
     defaultIndex = 0,
     children
-}: AccountsTabsProps): JSX.Element {
+}: AccountsTabsProps): ReactElement {
     return (
         <Tab.Group onChange={onChange} defaultIndex={defaultIndex}>
             <Tab.List className="flex gap-2 mb-6">

@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ReactElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlaidLink } from '@/components/PlaidLink';
 
@@ -22,7 +23,7 @@ export function AccountsHeader({
     onToggleInternalForm,
     onPlaidSuccess,
     onPlaidError
-}: AccountsHeaderProps): JSX.Element {
+}: AccountsHeaderProps): ReactElement {
     return (
         <motion.div
             className="flex justify-between items-center mb-6"

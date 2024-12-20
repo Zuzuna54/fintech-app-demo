@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 'use client';
 
-import React, { createContext, useContext, useEffect, useReducer, useCallback } from 'react';
+import React, { type ReactElement, createContext, useContext, useEffect, useReducer, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { AuthContextType, User, isUser } from '@/types/auth';
@@ -21,7 +21,7 @@ import { AxiosError } from 'axios';
 const AuthContext = createContext<AuthContextType | null>(null);
 
 // Provider component
-export function AuthProvider({ children }: { children: React.ReactNode }): JSX.Element {
+export function AuthProvider({ children }: { children: React.ReactNode }): ReactElement {
     const [state, dispatch] = useReducer(authReducer, initialState);
     const router = useRouter();
 

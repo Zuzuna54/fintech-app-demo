@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 
@@ -16,7 +16,7 @@ export function AnimatedTableContainer({
     pageSize,
     total,
     onPageChange
-}: AnimatedTableContainerProps): JSX.Element {
+}: AnimatedTableContainerProps): ReactElement {
     const totalPages = total && pageSize ? Math.ceil(total / pageSize) : 0;
 
     return (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { type ReactElement, useState, useCallback } from 'react';
 import useSWR from 'swr';
 import { Tab } from '@headlessui/react';
 import { motion } from 'framer-motion';
@@ -26,7 +26,7 @@ const columns: Column<Account>[] = [
     { header: 'Created', accessor: 'created_at', type: 'date', sortable: true }
 ];
 
-function AccountsPage(): JSX.Element {
+function AccountsPage(): ReactElement {
     const [showInternalForm, setShowInternalForm] = useState(false);
     const [selectedTab, setSelectedTab] = useState(0);
     const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);

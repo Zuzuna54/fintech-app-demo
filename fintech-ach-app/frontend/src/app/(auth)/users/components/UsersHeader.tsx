@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Button } from '@/components/ui/Button';
 import { UserRole } from '@/types/auth';
 import { motion } from 'framer-motion';
@@ -9,7 +9,7 @@ interface UsersHeaderProps {
     onToggleForm: () => void;
 }
 
-export function UsersHeader({ showForm, userRole, onToggleForm }: UsersHeaderProps): JSX.Element {
+export function UsersHeader({ showForm, userRole, onToggleForm }: UsersHeaderProps): ReactElement {
     return (
         <motion.div
             initial={{ opacity: 0, y: -20 }}

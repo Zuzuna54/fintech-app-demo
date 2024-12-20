@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/require-await */
 'use client';
 
-import { useEffect } from 'react';
+import React, { type ReactElement, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { UserRole } from '@/types/auth';
 
-export default function Home(): JSX.Element {
+export default function Home(): ReactElement {
     const router = useRouter();
     const { user, isAuthenticated, isLoading } = useAuth();
 

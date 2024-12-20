@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { type ReactElement, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, TrashIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
@@ -30,7 +30,7 @@ export function OrganizationModal({
     onDelete,
     onSuccess,
     userRole
-}: OrganizationModalProps): JSX.Element {
+}: OrganizationModalProps): ReactElement {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Account } from '@/types';
 
 interface AccountSelectorProps {
@@ -17,7 +17,7 @@ export function AccountSelector({
     onChange,
     disabled,
     error
-}: AccountSelectorProps): JSX.Element {
+}: AccountSelectorProps): ReactElement {
     return (
         <div>
             <label className="block text-sm font-medium text-gray-700">

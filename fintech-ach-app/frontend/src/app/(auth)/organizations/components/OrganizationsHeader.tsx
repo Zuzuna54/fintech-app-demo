@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { UserRole } from '@/types/auth';
@@ -13,7 +13,7 @@ export function OrganizationsHeader({
     showForm,
     userRole,
     onToggleForm
-}: OrganizationsHeaderProps): JSX.Element {
+}: OrganizationsHeaderProps): ReactElement {
     return (
         <motion.div
             initial={{ opacity: 0, y: -20 }}

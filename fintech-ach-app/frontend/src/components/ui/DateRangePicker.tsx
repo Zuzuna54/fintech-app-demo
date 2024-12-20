@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { type ReactElement, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { createPortal } from 'react-dom';
@@ -21,7 +21,7 @@ type CalendarDate = {
     isRangeEnd: boolean;
 };
 
-export function DateRangePicker({ startDate, endDate, onChange }: DateRangePickerProps): JSX.Element {
+export function DateRangePicker({ startDate, endDate, onChange }: DateRangePickerProps): ReactElement {
     const [isOpen, setIsOpen] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [hoveredDate, setHoveredDate] = useState<Date | null>(null);

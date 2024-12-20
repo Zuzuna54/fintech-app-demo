@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { type ReactElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/auth';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/Card';
 import { LogIn } from 'lucide-react';
 
-function LoginPage(): JSX.Element {
+function LoginPage(): ReactElement {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);

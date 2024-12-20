@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { type ReactElement, useState, useCallback } from 'react';
 import useSWR from 'swr';
 import type { Column, SortConfig } from '@/types/table';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -25,7 +25,7 @@ const columns: Column<Payment>[] = [
     { header: 'Created', accessor: 'created_at', type: 'date', sortable: true }
 ];
 
-function PaymentsPage(): JSX.Element {
+function PaymentsPage(): ReactElement {
     const [showForm, setShowForm] = useState(false);
     const [filters, setFilters] = useState<{
         status?: string;

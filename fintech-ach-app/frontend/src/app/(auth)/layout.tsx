@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { type ReactElement, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SidebarNavigation } from '@/components/SidebarNavigation';
 import { useAuth } from '@/auth';
@@ -12,7 +12,7 @@ export default function AuthLayout({
     children,
 }: {
     children: React.ReactNode;
-}): JSX.Element {
+}): ReactElement {
     const { user, isLoading, isAuthenticated } = useAuth();
     const router = useRouter();
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { type ReactElement, useState } from 'react';
 import { StatusSelect } from './ui/StatusSelect';
 import { AmountInput } from './ui/AmountInput';
 import { PaymentFiltersProps } from '@/types/ui';
@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DateRangePicker } from './ui/DateRangePicker';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 
-export function PaymentFilters({ filters, onChange }: PaymentFiltersProps): JSX.Element {
+export function PaymentFilters({ filters, onChange }: PaymentFiltersProps): ReactElement {
     const [localFilters, setLocalFilters] = useState(filters);
 
     const handleChange = (field: keyof typeof filters, value: string): void => {

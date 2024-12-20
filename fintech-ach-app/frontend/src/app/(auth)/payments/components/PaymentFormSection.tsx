@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PaymentForm } from '@/components/forms/PaymentForm';
 import type { Account } from '@/types';
@@ -15,7 +15,7 @@ export function PaymentFormSection({
     accounts,
     onSuccess,
     onError
-}: PaymentFormSectionProps): JSX.Element {
+}: PaymentFormSectionProps): ReactElement {
     return (
         <AnimatePresence mode="wait">
             {showForm && (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { type ReactElement, useState, useCallback } from 'react';
 import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -24,7 +24,7 @@ const columns: Column<Organization>[] = [
     { header: 'Updated', accessor: 'updated_at', type: 'date', sortable: true }
 ];
 
-function OrganizationsPage(): JSX.Element {
+function OrganizationsPage(): ReactElement {
     const [showForm, setShowForm] = useState(false);
     const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);

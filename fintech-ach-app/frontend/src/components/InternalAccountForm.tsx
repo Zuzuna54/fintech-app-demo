@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { type ReactElement, useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { BankAccountType } from '@/types/accounts';
 import { Button } from './ui/Button';
@@ -20,7 +20,7 @@ interface InternalAccountFormProps {
     onError: (error: Error) => void;
 }
 
-export function InternalAccountForm({ onSuccess, onError }: InternalAccountFormProps): JSX.Element {
+export function InternalAccountForm({ onSuccess, onError }: InternalAccountFormProps): ReactElement {
     const [formData, setFormData] = useState<FormData>({
         name: '',
         account_type: BankAccountType.FUNDING,

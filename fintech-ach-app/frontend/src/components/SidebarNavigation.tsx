@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/auth';
 import { UserRole } from '@/types/auth';
 import { Menu, X, LogOut } from 'lucide-react';
-import { useState } from 'react';
+import { type ReactElement, useState } from 'react';
 import { motion } from 'framer-motion';
 
 type NavLink = {
@@ -16,7 +16,7 @@ interface SidebarNavigationProps {
     links: readonly NavLink[];
 }
 
-export function SidebarNavigation({ links }: SidebarNavigationProps): JSX.Element {
+export function SidebarNavigation({ links }: SidebarNavigationProps): ReactElement {
     const pathname = usePathname();
     const router = useRouter();
     const { user, logout } = useAuth();

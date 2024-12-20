@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Account } from '@/types';
 import { BankAccountType } from '@/types/accounts';
 import { Button } from '@/components/ui/Button';
@@ -32,7 +32,7 @@ export function AccountForm({
     onSubmit,
     onChange,
     onDelete
-}: AccountFormProps): JSX.Element {
+}: AccountFormProps): ReactElement {
 
     const handleDelete = async (e: React.MouseEvent): Promise<void> => {
         e.preventDefault(); // Prevent form submission

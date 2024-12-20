@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { PaymentStatus } from '@/types/payments';
 
 interface StatusSelectProps {
@@ -6,7 +6,7 @@ interface StatusSelectProps {
     onChange: (value: string) => void;
 }
 
-export function StatusSelect({ value, onChange }: StatusSelectProps): JSX.Element {
+export function StatusSelect({ value, onChange }: StatusSelectProps): ReactElement {
     return (
         <div>
             <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">

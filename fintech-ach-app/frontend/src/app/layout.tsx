@@ -2,7 +2,7 @@
 
 import { AuthProvider } from '@/auth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { Suspense } from 'react';
+import { ReactElement, Suspense } from 'react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { AnimatePresence, motion } from 'framer-motion';
 import './globals.css';
@@ -24,7 +24,7 @@ const metadata = {
 };
 
 // Loading component for Suspense
-function LoadingFallback(): JSX.Element {
+function LoadingFallback(): ReactElement {
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -41,7 +41,7 @@ export default function RootLayout({
     children,
 }: {
     children: React.ReactNode;
-}): JSX.Element {
+}): ReactElement {
     return (
         <html lang="en" className={inter.className}>
             <head>

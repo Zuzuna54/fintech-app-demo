@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Dialog } from '@headlessui/react';
 import { DocumentDuplicateIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
@@ -22,7 +22,7 @@ export function AccountModal({
     onClose,
     onSuccess,
     onError
-}: AccountModalProps): JSX.Element {
+}: AccountModalProps): ReactElement {
     const {
         formData,
         isSubmitting,
