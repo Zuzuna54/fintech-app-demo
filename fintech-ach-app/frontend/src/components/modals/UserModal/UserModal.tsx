@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
-import React, { useState } from 'react';
+import React, { type ReactElement, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, TrashIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
@@ -19,7 +19,7 @@ interface UserModalProps {
     isOpen: boolean;
     onClose: () => void;
     onDelete?: (user: User) => void;
-    onSuccess?: () => void;
+    onSuccess?: () => Promise<void>;
     userRole?: UserRole;
 }
 
@@ -46,7 +46,7 @@ export function UserModal({
     onDelete,
     onSuccess,
     userRole
-}: UserModalProps): JSX.Element {
+}: UserModalProps): ReactElement {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState<FormData>({
         first_name: '',
@@ -131,7 +131,7 @@ export function UserModal({
             };
 
             await api.put(`/management/users/${user.id}`, submissionData);
-            onSuccess?.();
+            await onSuccess?.();
             onClose();
         } catch (error) {
             console.error('Error updating user:', error);
@@ -295,7 +295,9 @@ export function UserModal({
                                     {userRole === UserRole.SUPERUSER && (
                                         <div className="mt-6 flex justify-between">
                                             <Button
-                                                onClick={() => void handleSubmit()}
+                                                onClick={() => {
+                                                    void handleSubmit();
+                                                }}
                                                 isLoading={isSubmitting}
                                                 disabled={!hasChanges || isSubmitting}
                                                 className="inline-flex items-center space-x-2"
@@ -305,7 +307,9 @@ export function UserModal({
                                             </Button>
                                             <Button
                                                 variant="destructive"
-                                                onClick={() => void handleDelete()}
+                                                onClick={() => {
+                                                    void handleDelete();
+                                                }}
                                                 className="inline-flex items-center space-x-2"
                                             >
                                                 <TrashIcon className="h-4 w-4" />

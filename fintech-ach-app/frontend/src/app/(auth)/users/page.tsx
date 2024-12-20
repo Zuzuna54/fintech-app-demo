@@ -1,7 +1,7 @@
 // /* eslint-disable @typescript-eslint/no-misused-promises */
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { type ReactElement, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUsers } from '@/hooks/useUsers';
 import { Account, User, Organization, Payment } from '@/types';
@@ -10,14 +10,14 @@ import { UserRole } from '@/types/auth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import type { SortConfig } from '@/types/table';
 import { UsersHeader } from './components/UsersHeader';
 import { UsersTable } from './components/UsersTable';
 import { UserModal } from '@/components/modals/UserModal/UserModal';
 import { UserForm } from './components/UserForm';
 import { api } from '@/lib/api';
+import type { SortConfig } from '@/types/table';
 
-function UsersPage(): JSX.Element {
+function UsersPage(): ReactElement {
     const [showForm, setShowForm] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -164,7 +164,10 @@ function UsersPage(): JSX.Element {
                                 key="user-form"
                                 formData={formData}
                                 isSubmitting={isSubmitting}
-                                onSubmit={handleFormSubmit}
+                                onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    await handleFormSubmit(e);
+                                }}
                                 onChange={handleFormChange}
                                 errors={{
                                     general: errors.general ?? '',
@@ -221,8 +224,13 @@ function UsersPage(): JSX.Element {
                             setIsModalOpen(false);
                             setSelectedUser(null);
                         }}
-                        onDelete={handleDeleteUser}
-                        onSuccess={() => void mutate()}
+                        onDelete={async (user) => {
+                            await handleDeleteUser(user);
+                            await mutate();
+                        }}
+                        onSuccess={async () => {
+                            await mutate();
+                        }}
                         userRole={user?.role}
                     />
                 </main>
